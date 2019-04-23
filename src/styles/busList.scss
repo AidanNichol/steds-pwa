@@ -1,0 +1,119 @@
+:focus {
+  outline: -webkit-focus-ring-color auto 5px;
+  outline-style: none;
+}
+
+div.panel-title {
+  .data {
+    font-size: 0.9em;
+  }
+}
+
+.bus-list .panel-contents {
+  display: grid;
+  grid-template-rows: 80px;
+  grid-template-columns: 3fr 20px 2fr;
+  grid-template-areas:
+    "select xx buttons"
+    "booked xx others ";
+
+  .walk-select {
+    grid-area: select;
+    border: green thick solid;
+  }
+
+  .buttons {
+    grid-area: buttons;
+    display: flex;
+    flex-direction: row;
+    padding-top: 5px;
+
+    &:focus {
+      outline-width: 0;
+    }
+
+    img {
+      height: 40px;
+    }
+  }
+
+  .booked-members {
+    grid-area: booked;
+  }
+
+  .others {
+    grid-area: others;
+  }
+}
+
+.bus-list {
+  .booked-members {
+    max-height: 500px;
+    display: grid;
+    grid-template-rows: repeat(18, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .others {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .others,
+  .booked-cars,
+  .waiting-list {
+    .member {
+      margin-bottom: 10px;
+    }
+
+    button {
+      margin-left: 10px;
+    }
+  }
+
+  .booked-cars,
+  .others,
+  .booked-members,
+  .waiting-list {
+    align-items: start;
+    grid-gap: 8px;
+    grid-auto-flow: column;
+
+    .seats-available {
+      grid-row: 17 / span 2;
+      grid-column: 3;
+      width: 180px;
+      margin-left: 10px;
+      margin-right: 10px;
+      border: black thin solid;
+      border-radius: 5px;
+      text-align: center;
+    }
+
+    .member {
+      color: green;
+      display: flex;
+      justify-content: space-between;
+      padding: 0;
+      cursor: pointer;
+
+      .annotation {
+        font-size: 0.7em;
+      }
+
+      &:hover {
+        background-color: #eee;
+      }
+
+      input {
+        display: inline;
+        margin-right: 3px;
+      }
+
+      button {
+        width: 25px;
+        margin-right: 20px;
+      }
+    }
+  }
+}

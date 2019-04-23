@@ -1,0 +1,29 @@
+#about-page {
+  display: flex;
+  flex-direction: column;
+  min-width: 700px;
+
+  .item {
+    display: grid;
+    grid-template-columns: 150px auto;
+    grid-gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    align-content: space-between;
+    width: 100%;
+    min-height: 45px;
+  }
+
+  .main-text {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+  }
+
+  .sub-logo {
+    cursor: pointer;
+  }
+
+  .sub-text {
+  }
+}

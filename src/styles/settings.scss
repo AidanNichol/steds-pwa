@@ -1,0 +1,68 @@
+#settings-page {
+  display: flex;
+  flex-direction: column;
+  min-width: 700px;
+  width: 800px;
+
+  .obj {
+    margin: 10px;
+    margin-left: 40px;
+
+    h4 {
+      background-color: cyan;
+      border-bottom: black solid thin;
+      font-size: 1.1em;
+      font-weight: bold;
+      margin: 0;
+      padding-left: 10px;
+
+      &.developement {
+        color: #8f7031;
+        background-color: #f0d398;
+        border-color: #8f7031;
+      }
+    }
+
+    span {
+      display: inline-block;
+      width: 150px;
+      text-align: right;
+      margin: 4px;
+    }
+
+    > div {
+      padding-left: 10px;
+    }
+
+    .obj {
+      border: black solid thin;
+    }
+
+    .base {
+      display: none;
+    }
+  }
+  input.envfile, .name input {
+    width: 35em;
+  }
+  .item {
+    display: grid;
+    grid-template-columns: 150px auto;
+    grid-gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    align-content: space-between;
+    width: 100%;
+    min-height: 45px;
+  }
+
+  .main-text {
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+  }
+
+  .sub-logo {
+    cursor: pointer;
+  }
+}

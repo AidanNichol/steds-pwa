@@ -1,17 +1,44 @@
 {
   "name": "steds-pwa",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "dependencies": {
-    "react": "^16.8.2",
-    "react-dom": "^16.8.2",
-    "react-scripts": "2.1.5"
+    "StEdsSettings": "https://github.com/AidanNichol/StEdsSettings",
+    "chalk": "^2.4.2",
+    "classnames": "^2.2.6",
+    "colors": "^1.3.3",
+    "date-fns": "^2.0.0-alpha.27",
+    "global": "^4.3.2",
+    "hint.css": "^2.5.1",
+    "lodash": "^4.17.11",
+    "logit": "https://github.com/AidanNichol/logit",
+    "mobx": "^5.9.4",
+    "mobx-react": "^5.4.3",
+    "mobx-react-lite": "^1.2.0",
+    "mobx-state-tree": "^3.14.0",
+    "mst-middlewares": "^3.14.0",
+    "node-sass": "^4.11.0",
+    "pouchdb-authentication": "^1.1.3",
+    "prop-types": "^15.7.2",
+    "ramda": "^0.26.1",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-hot-loader": "^4.8.3",
+    "react-modal": "^3.8.1",
+    "react-scripts": "2.1.8",
+    "react-select": "^2.4.2",
+    "react-textarea-autosize": "^7.1.0",
+    "sprintf-js": "^1.1.2",
+    "styled-components": "^4.2.0",
+    "supports-color": "^6.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "couchapp:dev:W": "couchapp push src/designdocs/walks.js http://aidan:admin@localhost:5984/devbookings",
+    "couchapp:dev:M": "couchapp push src/designdocs/members.js http://aidan:admin@localhost:5984/devbookings"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -21,5 +48,16 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ]
+  ],
+  "description": "St.Eds Booking as PWA",
+  "main": "index.js",
+  "author": "Aidan Nichol <aidan@nicholware.co.uk>",
+  "license": "MIT",
+  "devDependencies": {
+    "couchapp": "^0.11.0",
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "pouchdb-adapter-http": "6",
+    "pouchdb-core": "6"
+  }
 }

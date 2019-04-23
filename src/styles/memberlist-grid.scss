@@ -1,0 +1,127 @@
+.member-list .panel-contents {
+  width: 1225px;
+  display: grid;
+  align-items: center;
+  grid-gap: 0;
+  grid-template-columns: 80px 240px 50px 500px;
+  grid-template-rows: 1fr;
+  background-color: #fff;
+  color: #444;
+  height: 100%;
+  grid-template-areas:
+    "btn1 names index details"
+    "btn2 names index details";
+
+  .sort-buttons {
+    grid-area: btn1;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+
+    button {
+      margin-bottom: 10px;
+    }
+  }
+
+  .names {
+    grid-area: names;
+    align-self: start;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .index {
+    grid-area: index;
+    align-self: center;
+    cursor: pointer;
+    text-align: center;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+
+    div {
+
+      &.allVisible {
+        background-color: #ccc;
+      }
+
+      &.partVisible:not(.allVisible) {
+        background-color: #eee;
+      }
+    }
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  .list-index {
+    grid-area: names;
+    align-self: start;
+  }
+
+  .show-member-details {
+    grid-area: details;
+    align-self: start;
+    margin-left: 10px;
+    height: 100%;
+    width: 100%;
+  }
+
+  .list-line {
+    width: 100%;
+    /* height: 4.3%; */
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+
+    .id {
+      display: inline-block;
+      width: 40px;
+      margin-right: 10px;
+      text-align: right;
+    }
+
+    &.suspended {
+      background-color: azure;
+      color: lightslategrey;
+      text-decoration: line-through;
+      opacity: 0.7;
+    }
+
+    &.due {
+      background-color: blanchedalmond;
+    }
+
+    &.late {
+      background-color: rgb(246, 213, 188);
+    }
+
+    &.current {
+      background-color: rgb(68, 190, 235);
+      border: thin solid rgb(135, 136, 247);
+      border-radius: 4px;
+    }
+  }
+
+  .action-buttons {
+    grid-area: btn2;
+    align-self: end;
+
+    button {
+      margin-top: 10px;
+    }
+
+    img {
+      height: 40px;
+    }
+  }
+}

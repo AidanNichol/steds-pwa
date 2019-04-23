@@ -1,0 +1,82 @@
+/* scss-lint:disable QualifyingElement Comment SelectorFormat */
+
+.show-member-details .panel-contents {
+  display: block;
+  height: 100%;
+}
+.show-member-details .panel-contents .user-details {
+  margin-right: 10px;
+  width: 470px;
+  display: grid;
+  grid-template-columns: 80px auto;
+  grid-template-rows: 1fr;
+  grid-template-areas: "buttons form";
+  height: 100%;
+
+  .edit-button {
+    grid-area: buttons;
+    justify-content: flex-end;
+  }
+
+  .form {
+    grid-area: form;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .edit-buttons {
+    grid-area: buttons;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+
+    button {
+      height: 60px;
+      margin-top: 4px;
+      box-sizing: border-box;
+    }
+
+  }
+
+  .stamp {
+    grid-area: form;
+    width: 80%;
+  }
+
+
+
+
+  &[text] {
+    &::before {
+      /*@import './watermark2.css';*/
+      cursor: default;
+      display: block;
+      font-family: sans-serif;
+      font-style: italic;
+      font-weight: bold;
+      width: 7em;
+      height: 4em;
+      line-height: 100%;
+      pointer-events: none;
+      position: absolute;
+      opacity: 0.1;
+      text-align: center;
+      user-select: none;
+      z-index: 9999;
+
+      content: attr(text);
+      transform: rotate(-45deg);
+      font-size: 8em;
+      color: var(--color, black);
+      bottom: 0;
+      right: 0.5em;
+      top: 1.5em;
+      left: 0;
+    }
+  }
+
+
+}
