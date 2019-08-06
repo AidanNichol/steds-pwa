@@ -15,6 +15,7 @@ const formatDate = fmtFp('yyyy-MM-dd');
 const formatISOdate = fmtFp("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
 const today = new Date();
+const defDate = dat => (dat ? parseISO(dat) : new Date());
 
 export const DS = {
   datetimePlus1(oldDate, inc = 1) {
@@ -68,16 +69,16 @@ export const DS = {
   },
 
   datePlusNweeks(dat, n = 4) {
-    return formatDate(addWeeks(parseISO(dat), n));
+    return formatDate(addWeeks(defDate(dat), n));
   },
   datePlusNyears(dat, n) {
-    return formatDate(addYears(dat ? parseISO(dat) : new Date(), n));
+    return formatDate(addYears(defDate(dat), n));
   },
   datePlusNmonths(dat, n) {
-    return formatDate(addMonths(parseISO(dat), n));
+    return formatDate(addMonths(defDate(dat), n));
   },
   datePlusNdays(dat, n) {
-    return formatDate(addDays(new Date(dat), n));
+    return formatDate(addDays(defDate(dat), n));
   }
 };
 export default DS;

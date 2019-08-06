@@ -1,8 +1,9 @@
-import { types, getParent, getRoot } from 'mobx-state-tree';
+import { types, getParent, getRoot, getEnv } from 'mobx-state-tree';
 
 import { tLogDate } from './customTypes';
 import { DS } from './MyDateFns.js';
 import { sprintf } from 'sprintf-js';
+// import {traceIt} from './traceIt'
 import _ from 'lodash';
 import Logit from 'logit';
 const logit = Logit('model:bookingLog');
@@ -18,11 +19,7 @@ export const BookingLog = types
     dat: tLogDate,
     delayedDat: types.maybe(tLogDate),
     who: types.maybe(types.string),
-    note: types.maybe(types.string),
-    clearedBy: types.maybe(tLogDate),
-    restartPt: types.maybe(types.boolean),
-
-    outstanding: types.optional(types.boolean, true)
+    note: types.maybe(types.string)
   })
   .preProcessSnapshot(snapshot => {
     let { dat, ...snp } = snapshot;
@@ -36,6 +33,10 @@ export const BookingLog = types
     type: 'W',
     amount: 0,
     hideable: true,
+    clearedBy: '',
+    restartPt: false,
+    balance: 0,
+    outstanding: false,
     // member: getParent(self, 2).memId,
     // account: getParent(self, 2).memId.accountId,
 
@@ -43,7 +44,15 @@ export const BookingLog = types
     // owing: /^B|C$/.test(self.req) ? Math.abs(self.amount) : 0,
     paid: { P: 0, T: 0, '+': 0 }
   }))
+  .preProcessSnapshot(snp => {
+    let { clearedBy, restartPt, outstanding, ...rest } = snp;
+    return rest;
+  })
   .actions(self => ({
+    afterCreate() {
+      const reset = getEnv(self).reset;
+      if (reset) self.delayedDat = undefined;
+    },
     update(updates) {
       Object.entries(updates).forEach(([key, value]) => {
         self[key] = value;
@@ -51,10 +60,7 @@ export const BookingLog = types
       });
       return self;
     },
-    setOutstanding(b) {
-      self.outstanding = b;
-      return self;
-    },
+
     resetLateCancellation() {
       self.req = 'BX';
 
@@ -76,8 +82,14 @@ export const BookingLog = types
     get member() {
       return self.booking.member;
     },
+    get name() {
+      return self.member.lName;
+    },
     get account() {
       return self.member.account;
+    },
+    get accountId() {
+      return self.account._id;
     },
     get walkId() {
       return self.walk._id;
@@ -126,15 +138,13 @@ export const BookingLog = types
       );
     },
     showLog() {
-      return _.pick(self, [
-        'dispDate',
-        'req',
-        'name',
-        'text',
-        'amount',
-        'balance',
-        'hideable',
-        'restartPt'
-      ]);
+      const res = _.pick(self, ['dispDate', 'req', 'name', 'text', 'amount', 'balance']);
+      res.completed = self.booking.completed;
+      res.effDate = self.effDate;
+      res.flags =
+        (self.hideable ? 'H' : '-') +
+        (self.booking.billable ? '£' : '-') +
+        (self.name ? ' ' + self.name : '');
+      return res;
     }
   }));

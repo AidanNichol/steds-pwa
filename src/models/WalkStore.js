@@ -4,7 +4,9 @@ import {
   applySnapshot,
   getEnv,
   getRoot,
-  resolveIdentifier
+  resolveIdentifier,
+  onPatch,
+  getSnapshot
 } from 'mobx-state-tree';
 import { DS } from './MyDateFns.js';
 import { Walk } from './Walk';
@@ -120,18 +122,27 @@ export const WalkStore = types
     load: flow(function* load(n = 1000) {
       try {
         const find = what => getEnv(self)[what] || getRoot(self)[what];
+        const db = getEnv(self).db;
         const endkey = 'W' + DS.lastAvailableDate;
-        const startkey = find('useFullHistory')
-          ? 'W2016-11-01'
-          : 'W' + DS.datePlusNmonths('', -6);
-        self.oldestWalk = startkey;
+        const useFullHistory = find('useFullHistory');
+        let startkey = useFullHistory ? 'W2016-11-01' : 'W' + DS.datePlusNmonths('', -6);
         const opts1 = { include_docs: true, startkey, endkey, limit: n };
         const data = yield find('db').allDocs(opts1);
         /* required in strict mode to be allowed to update state: */
-        const walks = data.rows.map(row => row.doc).filter(doc => doc.type === 'walk');
+        let walks = data.rows.map(row => row.doc).filter(doc => doc.type === 'walk');
+        self.oldestWalk = walks[0]._id;
+        if (!useFullHistory) {
+          let endkey = 'W' + DS.datePlusNdays(DS.datePlusNmonths('', -6), -1);
+          const opts = { include_docs: true, startkey: 'W0000', endkey };
+          let data = yield db.query('walks/incomplete', opts);
+          let walks2 = data.rows.map(row => row.doc);
+          walks = [...walks2, ...walks];
+        }
         applySnapshot(self.walks, walks);
         console.log(DS.dispTime, 'Walks Loaded', self.walks.length);
         console.log(DS.dispTime, 'Walk dates', {
+          startkey,
+          oldestWalk: self.oldestWalk,
           historyStarts: self.historyStarts,
           prehistoryStarts: self.prehistoryStarts,
           darkAgesStarts: self.darkAgesStarts,
@@ -151,17 +162,37 @@ export const WalkStore = types
     },
 
     bulkUpdateWalks: flow(function* bulkUpdateWalks() {
-      const unresolved = getRoot(self).AS.allUnresolvedWalks;
-      logit('unresol', unresolved);
-      self.walks.forEach(walk => {
-        walk.completed = !unresolved.has(walk._id);
-      });
+      // self.walks.forEach(walk => {
+      //   walk.update({ completed: self.areAllBookingsCompleted });
+      // });
+      logit('preBulkUpdateWalks', self.walks);
+      const walksToUpate = self.walks
+        .filter(walk => walk.dirty)
+        .map(walk => getSnapshot(walk));
+      self.bulkChanges = walksToUpate.length;
+      if (walksToUpate.length === 0) return;
+
       const db = getEnv(self).db;
-      const res = yield db.bulkDocs(self.walks);
-      logit('bulkUpdate', res);
+      const results = yield db.bulkDocs(walksToUpate);
+      logit('bulkUpdate', results);
+      results.forEach((res, i) => {
+        if (!res.ok || res.error) {
+          res.id = walksToUpate[i]._id;
+          throw res;
+        }
+        const walk = resolveIdentifier(Walk, self, res.id);
+        logit(`dbupdated (${res.id})`, walk._id, walk._rev, '->', res.rev);
+        walk.update({ dirty: false, _rev: res.rev });
+      });
     }),
     addToBookingIndex() {
+      const useFullHistory = getEnv(self).useFullHistory;
+
       self.walks.forEach(walk => {
+        onPatch(walk, (patch, unpatch) => {
+          !useFullHistory && logit('onPatch', walk._id, walk.venue, patch, unpatch);
+          walk.dirty = true;
+        });
         for (let booking of walk.bookings.values()) {
           const account = booking.member.account;
           booking.rationalizeLogs(walk.fee, walk.hideable);

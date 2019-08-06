@@ -3,7 +3,6 @@ const nbsp = '\u00A0';
 
 export class FundsManager {
   constructor(trace) {
-    this.owedForWalks = new Set();
     this.available = { '+': 0, T: 0, P: 0 };
     this.balance = 0;
     this.cashReceivedThisPeriod = 0;
@@ -24,7 +23,7 @@ export class FundsManager {
   applyToThisWalk(logs) {
     this.realActivity = false;
     const bLogs = logs
-      .filter(log => log.amount !== 0)
+      .filter(log => log.amount !== 0 && !log.ignore)
       .filter(log => /^[BC]/.test(log.req));
     this.traceMe &&
       console.log(
@@ -37,10 +36,16 @@ export class FundsManager {
     if (bLogs.length === 0) return true;
     let outstanding = true;
     this.realActivity = true;
+    let uncleared = null;
     bLogs.forEach(log => {
       log.update({ restartPt: undefined });
+      if (log.amount === 0 || !/^[BC]/.test(log.req)) {
+        this.showLog(log, '0 👍🏽');
+        return;
+      }
       if (/^[BC]X$/.test(log.req)) {
-        this.addCredit(log);
+        if (uncleared && uncleared.req === log.req[0]) uncleared = null;
+        else this.addCredit(log);
         outstanding = false;
       } else if (this.balance - log.amount >= 0) {
         this.useFunds(log);
@@ -48,20 +53,21 @@ export class FundsManager {
       } else {
         this.showLog(log, '💰👎🏼');
         outstanding = true;
+        uncleared = log;
         // console.log( log.dat, log0.text, log0.amount, this.balance, 'not enough funds', );
       }
-      if (this.newFunds === this.balance && !log.outstanding) {
-        this.traceMe &&
-          console.log(
-            'setting restartPt',
-            log.req,
-            this.newFunds,
-            this.balance,
-            this,
-            log
-          );
-        log.restartPt = true;
-      }
+      // if (this.newFunds === this.balance && !log.outstanding) {
+      //   this.traceMe &&
+      //     console.log(
+      //       'setting restartPt',
+      //       log.req,
+      //       this.newFunds,
+      //       this.balance,
+      //       this,
+      //       log
+      //     );
+      //   log.restartPt = true;
+      // }
     });
     logs[0].booking.update({ outstanding });
     return !outstanding;
@@ -80,6 +86,7 @@ export class FundsManager {
   addPayment(log) {
     this.realActivity = false;
     let amount = Math.abs(log.amount) * (log.req[1] === 'X' ? -1 : 1);
+    log.update({ amount });
     if (log.activeThisPeriod && log.req[0] === 'P') {
       this.cashReceivedThisPeriod += amount;
     }
@@ -118,9 +125,9 @@ export class FundsManager {
         balance: this.balance
       });
       if (key === 'P')
-        log.activeThisPeriod = log.activeThisPeriod || this.activeThisPeriod;
+        log.update({ activeThisPeriod: log.activeThisPeriod || this.activeThisPeriod });
     });
-    log.outstanding = false;
+    log.update({ outstanding: false });
     this.showLog(log, '👍🏽');
     return;
   }

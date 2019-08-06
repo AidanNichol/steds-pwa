@@ -22,19 +22,18 @@ export const AccountLog = types
     note: types.optional(types.string, ''),
     type: 'A',
     amount: types.optional(types.number, 0),
-    logsFrom: types.maybe(tLogDate),
-    oldestWalk: types.maybe(tWalkId),
-    restartPt: types.maybe(types.boolean),
-    clearedBy: types.maybe(tLogDate)
+    creditCarriedOver: types.optional(types.number, 0),
+    oldestWalk: types.maybe(tWalkId)
   })
   .volatile(() => ({
     balance: 0,
     toCredit: 0,
     historic: false,
-    hideable: true
+    hideable: true,
+    clearedBy: types.maybe(tLogDate)
   }))
   .preProcessSnapshot(snapshot => {
-    let { logsFrom, restartPoint, ...snp } = snapshot; //eslint-disable:no-unused-vars
+    let { logsFrom, restartPoint, clearedBy, ...snp } = snapshot; //eslint-disable:no-unused-vars
     return { ...snp };
   })
   .views(self => ({
@@ -64,13 +63,14 @@ export const AccountLog = types
     showLog() {
       return _.pick(self, [
         'dispDate',
+        'dat',
         'req',
         'name',
-        'text',
         'amount',
         'balance',
         'hideable',
-        'restartPt'
+        'creditCarriedOver',
+        'oldestWalk'
       ]);
     },
     printLog() {

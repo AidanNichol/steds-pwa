@@ -80,6 +80,15 @@
         padding-bottom: 0;
         padding-top: 0;
         overflow: hidden;
+        display:inline-block;
+   
+    position: relative;
+    
+    transition: all 200ms ease-in;
+&:hover { 
+    z-index: 2;
+    transform: scale(1.7);
+   }
 
         .normal {
           padding-top: 7px;

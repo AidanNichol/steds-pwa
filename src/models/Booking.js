@@ -1,4 +1,4 @@
-import { types, getParent, getRoot } from 'mobx-state-tree';
+import { types, getParent, getRoot, getEnv } from 'mobx-state-tree';
 import { Member } from './Member';
 import { BookingLog } from './BookingLog';
 import { tBookingStatus } from './customTypes';
@@ -30,20 +30,30 @@ export const Booking = types
     status: types.maybe(tBookingStatus),
     annotation: types.maybe(types.string),
     logs: types.array(BookingLog),
-    outstanding: types.optional(types.boolean, true),
-    lastUpdate: types.maybe(types.string)
+    ignore: types.optional(types.boolean, true),
+    lastUpdate: types.maybe(types.string),
+    completed: types.maybe(types.string)
   })
   .volatile(() => ({
     free: false,
     fee: 8,
-    hideable: false
+    hideable: false,
+    billable: false
   }))
   .preProcessSnapshot(snp => {
-    if (!snp || (snp.lastUpdate && snp.lastUpdate !== '""')) return snp;
-    let lastUpdate = (_.findLast(snp.logs, log => log.req === snp.status) || {}).dat;
-    return { ...snp, lastUpdate };
+    if (!snp) return snp;
+
+    let { lastUpdate, ...rest } = snp;
+    if (!lastUpdate || snp.lastUpdate === '""') {
+      lastUpdate = (_.findLast(snp.logs, log => log.req === snp.status) || {}).dat;
+    }
+    return { ...rest, lastUpdate };
   })
   .actions(self => ({
+    afterCreate() {
+      const reset = getEnv(self).reset;
+      if (reset) self.completed = undefined;
+    },
     // afterAttach() {
     //   const account = self.member.accountId;
     //   // console.log('attached booking:', self.id, account, account.bookings);
@@ -53,7 +63,7 @@ export const Booking = types
     //   self.rationalizeLogs(self.walk.fee, self.walk.hideable);
     // },
     changeStatus(req, makeLog = true) {
-      logit('changeStatus', self.id, '->', req, makeLog)
+      logit('changeStatus', self.id, '->', req, makeLog);
       self.status = req;
       let log;
       if (makeLog) {
@@ -62,7 +72,7 @@ export const Booking = types
       self.attachLog(log);
     },
     attachLog(log) {
-      if (log){
+      if (log) {
         self.logs.push(log);
         self.lastUpdate = log.dat;
         self.member.accountId.currentBookings.push(log);
@@ -73,25 +83,50 @@ export const Booking = types
       Object.entries(updates).forEach(([key, value]) => (self[key] = value));
       return self;
     },
-    setOutstanding(b) {
-      self.outstanding = b;
+    updateCompleted(b) {
+      if (!b || (self.completed && self.completed > b)) return;
+      self.completed = b;
       return self;
     },
     rationalizeLogs(fee = 8, canHide) {
-      const trace = self.id === 'W2019-04-13M1092'
+      const trace = self.id === 'W2019-04-13M1092';
       let free = false;
       let paymentPeriodStart = getRoot(self).BP.lastPaymentsBanked;
-
+      let lastLog;
       self.logs.forEach(log => {
-        const activeThisPeriod = log.dat > paymentPeriodStart;
-        const hideable = canHide && !activeThisPeriod;
-        log.update({ hideable, activeThisPeriod });
+        let activeThisPeriod = log.dat > paymentPeriodStart;
+        let hideable = canHide && !activeThisPeriod;
+        if (/^[BC]/.test(log.req)) self.billable = true;
         if (log.req === 'BL') free = true;
         if (log.req === 'BX') free = false;
-        const amount = free ? 0: fee * chargeFactor[log.req];
-        trace && logit('rationalize', free, log.req, fee, amount);
-        log.update({ amount });
+        let amount = free ? 0 : fee * chargeFactor[log.req];
+        log.update({ amount, hideable, activeThisPeriod });
+        if (
+          lastLog &&
+          (lastLog.req + 'X' === log.req || lastLog.req === log.req + 'X') &&
+          log.dat.substr(0, 10) === lastLog.dat.substr(0, 10)
+        ) {
+          const upd = {
+            hideable: true,
+            activeThisPeriod: false,
+            ignore: true,
+            amount: 0,
+            cancelled: true
+          };
+
+          lastLog.update(upd);
+          log.update(upd);
+          lastLog = undefined;
+        } else lastLog = log;
+        trace &&
+          logit('rationalize', free, log.walk.venue, log.req, fee, amount, hideable);
       });
+      self.lastUpate = (_.last(self.logs) || {}).dat;
+      if (!self.billable) {
+        trace && logit('rationalize set completed', self);
+        self.updateCompleted(self.lastUpdate);
+      }
+      if (canHide && !self.billable) self.ignore = true;
     },
     updateFromDoc(docBkng) {
       if (docBkng.lastUpdate <= self.lastUpdate) return;

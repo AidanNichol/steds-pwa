@@ -100,8 +100,22 @@ export const Store = types
         { fn: self.reportStart, text: 'Calc All Account Status' },
         { fn: self.AS.getAllAccountStatus },
         { fn: self.reportEnd, text: 'All Account Status Calculated ' },
+        { fn: self.reportStart, text: ' Bulk Update Accounts' },
+        { fn: self.AS.bulkUpdateAccounts, flow: true },
+        {
+          fn: self.reportEnd,
+          text: 'Accounts updated: ',
+          data: () => self.AS.bulkChanges
+        },
+        { fn: self.reportStart, text: ' Bulk Update Walks' },
+        { fn: self.WS.bulkUpdateWalks, flow: true },
+        {
+          fn: self.reportEnd,
+          text: 'Walks updated: ',
+          data: () => self.WS.bulkChanges
+        },
         { fn: self.reportStart, text: ' Loading finished' },
-        { fn: self.reportStart, text: '', wait: 1000 },
+        { fn: self.reportStart, text: '', wait: 3000 },
         { fn: self.loadDone }
       ];
       self.nextStep();
@@ -142,7 +156,8 @@ export const Store = types
     },
     reportEnd({ text, data = () => '' }) {
       const diff = DS.duration(self.start, new Date());
-      let msg = `${DS.dispTime} ✅ ${text} ${data()}(${diff} sec)`;
+      // eslint-disable-next-line no-irregular-whitespace
+      let msg = `${DS.dispTime} ✅ ${text}  ${data()}  (${diff} sec)`;
       self.loadingStatus.pop();
       self.loadingStatus.push(msg);
       console.log(msg);

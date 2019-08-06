@@ -4,11 +4,13 @@ import {
   applySnapshot,
   resolveIdentifier,
   getEnv,
-  getRoot
+  getRoot,
+  getSnapshot
 } from 'mobx-state-tree';
 import { Account } from './Account';
 import { db } from './testDB.js';
-
+import { traceId } from './traceIt';
+const logit = require('logit')('model/AccountStore');
 /* 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃   Account Store                                          ┃
@@ -52,7 +54,7 @@ export const AccountStore = types
       self.accounts.forEach(account => {
         account.accountStatusNew();
       });
-      const account = resolveIdentifier(Account, self, 'A2065');
+      const account = resolveIdentifier(Account, self, traceId);
       account.showAllLogs('at start', 1000, true);
     },
     categorizeAllBookingLogs() {
@@ -81,7 +83,28 @@ export const AccountStore = types
       if (acc) acc.members.replace([...acc.members, ...members]);
       else acc = self.addAccount({ _id: accId, members });
       acc.dbUpdate();
-    }
+    },
+    bulkUpdateAccounts: flow(function* bulkUpdateAccounts() {
+      logit('preBulkUpdateAccounts', self.accounts);
+
+      const accountsToUpate = self.accounts
+        .filter(account => account.dirty)
+        .map(acc => getSnapshot(acc));
+      self.bulkChanges = accountsToUpate.length;
+      if (accountsToUpate.length === 0) return;
+      const db = getEnv(self).db;
+      const results = yield db.bulkDocs(accountsToUpate);
+      logit('bulkUpdate', results);
+      results.forEach((res, i) => {
+        if (!res.ok || res.error) {
+          res.id = accountsToUpate[i]._id;
+          throw res;
+        }
+        const account = resolveIdentifier(Account, self, res.id);
+        logit(`dbupdated (${res.id})`, account._id, account._rev, '->', res.rev);
+        account.update({ _rev: res.rev, dirty: false });
+      });
+    })
   }))
   .views(self => ({
     findAccount(accId) {

@@ -66,10 +66,9 @@ class TheTable extends React.Component {
             let rCl = classNames({
               logData: true,
               logRec: true,
-              outstanding: log.outstanding,
+              outstanding: log.booking && !log.booking.completed,
               historic: log.hideable,
-              inbalance: !log.restartPt && log.balance === 0,
-              cleared: log.restartPt
+              cleared: log.amount !== 0 && log.balance === 0
             });
             let aCl = classNames({
               logData: true,
@@ -83,6 +82,7 @@ class TheTable extends React.Component {
               logBal: true,
               credit: log.balance > 0 && log.req[0] !== 'W',
               owing: log.outstanding
+              // owing: log.booking && !log.booking.completed && log.amount !== 0
             });
             return (
               <div key={i} className={rCl}>

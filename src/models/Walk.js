@@ -35,9 +35,21 @@ export const Walk = types
     lastUpdate: types.maybe(types.string),
     bookings: types.map(types.late(() => Booking))
   })
-  .volatile(() => ({ dirty: false }))
+  // .volatile(() => ({ dirty: false }))
+  .postProcessSnapshot(snp => {
+    const { bookings: oBookings, ...rest } = snp;
+    const bookings = {};
+    rest.completed = true;
+    Object.values(oBookings).forEach(booking => {
+      const { id, member: memId, ...bkng } = booking;
+      rest.completed = rest.completed && !!booking.completed;
+      bookings[memId] = bkng;
+    });
+
+    return { ...rest, bookings };
+  })
   .preProcessSnapshot(snp => {
-    const { bookings, ...rest } = snp;
+    const { bookings, booked, annotations, log, ...rest } = snp;
     const newBookings = {};
 
     Object.entries(bookings).forEach(([memId, booking]) => {
@@ -100,6 +112,9 @@ export const Walk = types
         display
       };
     },
+    get areAllBookingsCompleted() {
+      return Array.from(self.bookings.values()).every(bk => !!bk.completed);
+    },
     getBookingsByType(type) {
       return Array.from(self.bookings.values()).filter(bk => bk.status === type);
     },
@@ -108,7 +123,7 @@ export const Walk = types
     }
   }))
   .actions(self => {
-    function bookingChange(memId, req, force = false) {
+    function* bookingChange(memId, req, force = false) {
       const id = self._id + memId;
       logit('bookingChange', memId, req, id, force);
       let bkng = self.bookings.get(id);
@@ -121,25 +136,40 @@ export const Walk = types
         req = 'BL';
       }
       bkng.changeStatus(req, !force);
-      self.updateDB();
+      /^[BC]/.test(req) && bkng.update({ completed: undefined });
+      yield self.updateDB();
       const account = bkng.member.account;
 
       account.accountStatusNew();
     }
     // addMiddleware(self, actionLogger);
     return {
-      bookingChange: decorate(atomic, bookingChange),
+      bookingChangeAtomic: decorate(atomic, flow(bookingChange)),
+      bookingChange(...args) {
+        self.bookingChangeAtomic(...args).catch(error => logit('caught error', error));
+      },
+      closeWalk() {
+        self.closed = true;
+        self.updateDB();
+      },
+      update(updates) {
+        Object.entries(updates).forEach(([key, value]) => (self[key] = value));
+        return self;
+      },
       updateDB: flow(function*() {
         const db = getEnv(self).db;
-        const { bookings: oBookings, ...rest } = getSnapshot(self);
-        const bookings = {};
+        // const { bookings: oBookings, ...rest } = getSnapshot(self);
+        // const bookings = {};
+        // rest.completed = true;
+        // Object.values(oBookings).forEach(booking => {
+        //   const { id, member: memId, ...bkng } = booking;
+        //   rest.completed = rest.completed && !!booking.completed;
+        //   bookings[memId] = bkng;
+        // });
 
-        Object.values(oBookings).forEach(booking => {
-          const { id, member: memId, ...bkng } = booking;
-          bookings[memId] = bkng;
-        });
+        // const res = yield db.put({ ...rest, bookings });
 
-        const res = yield db.put({ ...rest, bookings });
+        const res = yield db.put(getSnapshot(self));
         if (!res.ok || res.error) throw res;
         logit('dbupdated', self._id, self._rev, '->', res.rev);
         self.dirty = false;
@@ -163,7 +193,6 @@ export const Walk = types
           // bkng.memId.accountId.bookings.add(id);
         }
         bkng.updateFromDoc(booking);
-        logit(`updated ${self._id} booking`, memId, booking.status);
       });
       logit('applying', doc);
     },

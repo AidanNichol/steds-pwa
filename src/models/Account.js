@@ -18,10 +18,11 @@ import { AccountLog } from './AccountLog.js';
 // import { actions } from './account-action-status.js';
 import { DS } from '../models/MyDateFns';
 import { sprintf } from 'sprintf-js';
+import { traceIt } from './traceIt';
 
-import * as R from 'ramda';
+// import * as R from 'ramda';
 
-import _ from 'lodash';
+// import _ from 'lodash';
 const logit = require('logit')('store:account/account');
 
 // const AccountId = types.refinement(types.string, id => /^A\d+$/.test(id));
@@ -50,7 +51,8 @@ export const Account = types
     lastRestart: '',
     firstRestart: '',
     unresolvedWalks: new Set(),
-    dirty: false
+    dirty: false,
+    openingCredit: 0
   }))
   .views(self => ({
     get mergedLogs() {
@@ -146,7 +148,7 @@ export const Account = types
     },
     updateWithDoc(accDoc) {
       if (accDoc._rev === self._rev) return;
-      const { docLogs, ...rest } = accDoc;
+      const { logs: docLogs, ...rest } = accDoc;
       self.update(rest);
       docLogs.forEach(docLog => {
         let accLog = self.logs.find(log => log.dat === docLog.dat);
@@ -197,61 +199,87 @@ export const Account = types
     }),
     categorizeBookingLogs() {
       const useFullHistory = getEnv(self).useFullHistory;
-      const trace = self._id === 'A2065';
+      const trace = traceIt(self._id);
       const root = getRoot(self);
-      self.dirtied = 0;
-      onPatch(self, () => (self.dirty = true));
+      trace && logit('tracing', self._id, self.name);
+      self.dirty = 0;
+      onPatch(self, (patch, unpatch) => {
+        !useFullHistory && logit('onPatch', self._id, self.name, {...patch, was:unpatch.value});
+        self.dirty = true;
+      });
       var paymentPeriodStart = root.BP.lastPaymentsBanked;
-      const historicLogs = [];
       const currentBookings = [];
       const oldestWalk = root.WS.oldestWalk;
-      self.logs.forEach(log => {
+      let oldestWalkNeeded = 'W0000-00-00';
+      self.openingCredit = 0;
+      let preHistoryStarts = '0000-00-00';
+      self.showLogs('logs', 1000, trace);
+      let aLogs = self.logs.filter(log => log.req[0] !== '_');
+      aLogs.forEach(log => {
         if (log.dat > paymentPeriodStart) log.update({ hideable: false });
       });
-      const rsPoints = self.logs
-        .filter(log => log.restartPt && log.hideable && !useFullHistory)
-        .filter(pt => pt.oldestWalk >= oldestWalk);
-      const lastRestart = (_.last(rsPoints) || {}).dat || '0000-00-00';
-      const firstRestart = (rsPoints[0] || {}).dat || '0000-00-00';
-      self.firstRestart = firstRestart;
-      self.lastRestart = lastRestart;
+      if (useFullHistory) {
+        self.currentPayments = aLogs;
+        self.bookings.forEach(bkngId => {
+          const booking = resolveIdentifier(Booking, root, bkngId);
+          currentBookings.push(...booking.logs);
+        });
+        self.currentBookings = currentBookings.sort(cmpDat);
+        self.showAllLogs('After Catagorize', 1000, trace);
+        return;
+      }
+      let lastPayment = { dat: '0000-00-00', creditCarriedOver: 0 };
+      if (aLogs.length > 0) {
+        const start = aLogs.findIndex(log => log.oldestWalk >= oldestWalk);
+        if (start !== -1) {
+          if (start - 1 >= 0) lastPayment = aLogs[start - 1];
+          aLogs = aLogs.slice(start);
+          oldestWalkNeeded = aLogs[0].oldestWalk;
+        } else {
+          lastPayment = aLogs[aLogs.length - 1];
+          aLogs = [];
+        }
+        preHistoryStarts = lastPayment.dat;
+        if (lastPayment.creditCarriedOver > 0) {
+          logit(
+            'Credit carried forward',
+            self._id,
+            self.name,
+            lastPayment.dispDat,
+            lastPayment
+          );
+          const openCredit = AccountLog.create({
+            ...getSnapshot(lastPayment),
+            amount: lastPayment.creditCarriedOver,
+            note:'Credit carried forward',
+            req: '+',
+            creditCarriedOver: 0
+          });
+          aLogs.unshift(openCredit);
+          self.openingCredit = lastPayment.creditCarriedOver;
+        }
+      }
+
       trace &&
-        logit(
-          'categorize',
+        logit('categorize', {
           useFullHistory,
           oldestWalk,
-          firstRestart,
-          lastRestart,
-          paymentPeriodStart
-        );
-      self.bookings.forEach(bkngId => {
-        const logs = resolveIdentifier(Booking, root, bkngId).logs;
-        logs.forEach(log => {
-          if (log.completedBy < firstRestart) return;
-          if (log.dat > paymentPeriodStart || log.completedBy > paymentPeriodStart)
-            log.update({ hideable: false });
-          if (log.hideable && log.completedBy <= lastRestart) historicLogs.push(log);
-          else currentBookings.push(log);
+          oldestWalkNeeded,
+          paymentPeriodStart,
+          preHistoryStarts
         });
+      self.bookings.forEach(bkngId => {
+        const booking = resolveIdentifier(Booking, root, bkngId);
+        if (booking.walk._id < oldestWalkNeeded) return;
+        currentBookings.push(
+          ...booking.logs.filter(log => log.effDate > preHistoryStarts)
+        );
       });
-      self.showLogs('historicLogs', null, trace);
       self.showLogs('currentLogs', null, trace);
       self.showLogSizes(trace);
-      if (historicLogs.length > 0) {
-        historicLogs.push(
-          ...self.logs
-            .filter(log => log.req[0] !== '_')
-            .filter(log => log.dat >= firstRestart)
-            .filter(log => log.dat <= lastRestart)
-        );
-      }
-      self.currentPayments = self.logs
-        .filter(log => log.req[0] !== '_')
-        .filter(log => log.dat > lastRestart);
-      historicLogs.sort(resolvedSort);
-      self.showLogs('historicLogs', 1000, trace);
-      self.historicLogs = historicLogs;
-      self.currentBookings = currentBookings.sort(cmpDat);
+
+      self.currentPayments = aLogs;
+      self.currentBookings = currentBookings;
       self.showLogSizes(trace);
       self.showAllLogs('After Catagorize', 1000, trace);
       return;
@@ -262,14 +290,11 @@ export const Account = types
         if (log.walk.closed) self.unresolvedWalks.add(log.walk._id);
       });
     }
-    // setFlagsInLogs(hideable) {
-    //   self.logs.forEach(log => log.update({ hideable }));
-    // }
   }));
-var resolvedSort = R.sortWith([
-  R.ascend(R.prop('effDat')),
-  R.descend(R.prop('type')),
-  R.ascend(R.prop('dat'))
-]);
+// var resolvedSort = R.sortWith([
+//   R.ascend(R.prop('effDate')),
+//   R.descend(R.prop('type')),
+//   R.ascend(R.prop('dat'))
+// ]);
 var coll = new Intl.Collator();
 var cmpDat = (a, b) => coll.compare(a.dat, b.dat);

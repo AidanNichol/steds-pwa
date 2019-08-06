@@ -2,6 +2,7 @@ import { getRoot } from 'mobx-state-tree';
 import _ from 'lodash';
 import { FundsManager } from './fundsManager';
 import { DS } from './MyDateFns.js';
+import { traceIt } from './traceIt';
 
 const R = require('ramda');
 const logit = require('logit')('store/account/accountStatus');
@@ -13,7 +14,7 @@ export const actions = self => ({
   accountStatusNew() {
     const root = getRoot(self);
     let traceMe = false;
-    traceMe = process.env.NODE_ENV === 'development' && self._id === 'A2065';
+    traceMe = traceIt(self._id);
     // traceMe = true;
 
     var paymentPeriodStart = root.BP.lastPaymentsBanked;
@@ -44,7 +45,7 @@ export const actions = self => ({
       hideable = res.hideable;
 
       if (balance !== 0) funds.transferSurplusToCredit();
-      if (res.restartPt && hideable) {
+      if (balance === 0 && hideable) {
         historicLogs.push(...currentLogs, ...res.resolvedLogs);
         currentLogs = [];
       } else {
@@ -63,7 +64,7 @@ export const actions = self => ({
     balance = res.balance;
     hideable = res.hideable;
 
-    if (res.restartPt && hideable) {
+    if (balance === 0 && hideable) {
       historicLogs.push(...currentLogs, ...res.resolvedLogs);
       currentLogs = [];
     } else {
@@ -76,10 +77,14 @@ export const actions = self => ({
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
     hideable = false;
     balance = funds.balance;
-    res.unresolvedLogs.forEach(log => {
-      balance -= log.amount;
-      log.update({ hideable, outstanding: true });
-    });
+    res.unresolvedLogs
+      .slice()
+      .sort(cmpDate)
+      .forEach(log => {
+        balance -= log.amount;
+        log.update({ balance });
+        !(log.ignore && log.hideable) && log.update({ hideable });
+      });
 
     self.activeThisPeriod = activeThisPeriod || funds.activeThisPeriod;
     self.funds = funds;
@@ -88,7 +93,7 @@ export const actions = self => ({
     self.historicLogs = [...self.historicLogs, ...historicLogs];
     self.currentLogs = currentLogs;
 
-    historicLogs.forEach(log => (log.historic = true));
+    historicLogs.forEach(log => log.update({ historic: true }));
     self.currentBookings = self.currentBookings.filter(log => !log.historic);
     self.currentPayments = self.currentPayments.filter(log => !log.historic);
     // self.extractUnresolvedWalks();
@@ -105,9 +110,15 @@ export function processLogs(args) {
   let clearedLogs = [];
   let prevBalance = balance;
   let hideable = !!args.hideable;
-  let availBlogs = aLog ? bLogs.filter(log => log.dat < aLog.dat) : bLogs;
+  let availBlogs = bLogs;
+  let futureLogs = [];
+  if (aLog) {
+    availBlogs = bLogs.filter(log => log.dat < aLog.dat);
+    futureLogs = bLogs.filter(log => log.dat >= aLog.dat);
+    if (!aLog.hideable) hideable = false;
+  }
   availBlogs = _.values(_.groupBy(walkSort(availBlogs), log => log.bookingId));
-  let futureLogs = aLog ? bLogs.filter(log => log.dat >= aLog.dat) : [];
+
   /*
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃   check all uncleared bookings logs                      ┃
@@ -116,15 +127,15 @@ export function processLogs(args) {
   // traceMe && logit('availBlogs', availBlogs[0]);
   // if (availBlogs[0] && !availBlogs[0][0].walk) logit('bad Blog', availBlogs[0]);
   // let oldestWalk; = availBlogs[0] && availBlogs[0][0].walk._id;
-  let oldestWalk;
+  let oldestWalk = getOldestWalk(bLogs);
   while (availBlogs.length > 0) {
     let wLogs = availBlogs.shift(); // all current log records for a walk
     if (!wLogs[0].walk) logit('bad wLogs', wLogs);
-    if (!wLogs[0].walk.closed) hideable = false;
-    if (!oldestWalk) oldestWalk = wLogs[0].walk._id;
-
+    // if (!wLogs[0].walk.closed) hideable = false;
+    if (!oldestWalk && wLogs[0].booking.billable) oldestWalk = wLogs[0].walk._id;
     let paid = funds.applyToThisWalk(wLogs);
-    traceMe && logit('wlogs post funds', hideable, paid, wLogs);
+    traceMe &&
+      logit('wlogs post funds', hideable, paid, funds.okToAddDummyPayments, wLogs);
     if (!paid) {
       // not enough funds to clear this walk
       availBlogs.unshift(wLogs); // haven't used so put it back
@@ -137,11 +148,15 @@ export function processLogs(args) {
     //┃   zero balance point reach using credits                 ┃
     //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-    [, clearedLogs] = reSortAndAdjustBalance(clearedLogs, prevBalance);
-    hideable = clearedLogs.reduce((res, log) => res && log.hideable, hideable);
+    clearedLogs = reSortAndAdjustBalance(clearedLogs, prevBalance);
     const last = _.last(clearedLogs);
-    updateLogs(clearedLogs, { hideable, clearedBy: last.dat });
-    last.update({ restartPt: true });
+    // eslint-disable-next-line no-loop-func
+    clearedLogs.forEach(log => {
+      hideable = hideable && log.hideable && !log.activeThisPeriod;
+      if (log.value === 0) return;
+      log.update({ hideable });
+      log.booking.updateCompleted(last.dat);
+    });
     funds.realActivity = false;
     resolvedLogs.push(...clearedLogs);
     clearedLogs = [];
@@ -155,7 +170,8 @@ export function processLogs(args) {
     futureLogs.unshift(
       ..._.flatten(availBlogs)
         .map(log => {
-          delayedDat && log.update({ delayedDat });
+          if (delayedDat && (!log.delayedDat || log.delayedDat < delayedDat))
+            log.update({ delayedDat });
           return log;
         })
         .sort(cmpDate)
@@ -165,12 +181,15 @@ export function processLogs(args) {
   //┃   re-sort the cleared logs into date order and recalulate balance ┃
   //┃   Add the cleared logs to the appropriate pile                    ┃
   //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-  [, clearedLogs] = reSortAndAdjustBalance(clearedLogs, prevBalance, funds.balance, aLog);
-  traceMe && logit('post resort', prevBalance, funds.balance);
+  balance = funds.balance;
+  clearedLogs = reSortAndAdjustBalance(clearedLogs, prevBalance, funds.balance, aLog);
+  traceMe && logit('post resort', prevBalance, funds.balance, balance);
   traceMe && logit('post resort', clearedLogs);
   hideable = clearedLogs.reduce((res, log) => res && log.hideable, hideable);
-  updateLogs(clearedLogs, { hideable });
-
+  clearedLogs.forEach(log => {
+    if (log.cancelled) return;
+    log.update({ hideable });
+  });
   if (aLog || balance === 0) {
     resolvedLogs.push(...clearedLogs);
   } else unresolvedLogs.push(...clearedLogs);
@@ -179,7 +198,8 @@ export function processLogs(args) {
   //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
   const restartPt = balance === 0;
   if (aLog) {
-    aLog.update({ balance, toCredit: -balance, hideable, oldestWalk, restartPt });
+    aLog.update({ balance, toCredit: -balance, hideable });
+    aLog.update({ oldestWalk, creditCarriedOver: balance });
     resolvedLogs.push(aLog);
   }
   unresolvedLogs.push(...futureLogs);
@@ -201,26 +221,32 @@ export function processLogs(args) {
 /*         Helper Functions                   */
 /*                                                 */
 /*-------------------------------------------------*/
-
-const updateLogs = (logs, patch) => {
-  return logs.map(log => log.update(patch));
-};
-
-function reSortAndAdjustBalance(clearedLogs, prevBalance, endBalance = 0, aLog) {
-  if (clearedLogs.length === 0) return [prevBalance, clearedLogs];
-  const sLogs = clearedLogs.sort(cmpDate);
-  let balance = prevBalance;
-  let clearedBy;
-  if (endBalance === 0) {
-    clearedBy = aLog ? aLog.dat : _.last(sLogs).dat;
-  }
-  sLogs.forEach(log => {
-    if (log.type === 'A') return;
-    balance -= log.amount || 0;
-    const upd = { balance, outstanding: false, clearedBy: log.clearedBy || clearedBy };
-    log.update(upd);
+function getOldestWalk(bLogs) {
+  let oldestWalk;
+  bLogs.forEach(log => {
+    if (!log.booking.billable) return;
+    if (!oldestWalk || log.walk._id < oldestWalk) oldestWalk = log.walk._id;
   });
-  return [balance, sLogs];
+  return oldestWalk;
+}
+function reSortAndAdjustBalance(clearedLogs, prevBalance, endBalance = 0, aLog) {
+  if (clearedLogs.length === 0) return clearedLogs;
+  const cLogs = clearedLogs.sort(cmpDate);
+
+  let balance = prevBalance;
+  cLogs.forEach(log => {
+    if (log.type === 'A') return;
+    if (!log.booking.billable) return;
+    balance -= log.amount || 0;
+    if (aLog) {
+      log.amount !== 0 && log.booking.updateCompleted(aLog.dat);
+    } else {
+      if (log === _.last(log.booking.logs))
+        log.booking.updateCompleted(_.last(cLogs.dat));
+    }
+    log.update({ balance });
+  });
+  return cLogs;
 }
 
 var coll = new Intl.Collator();

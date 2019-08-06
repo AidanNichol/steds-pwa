@@ -27,7 +27,9 @@ import MainLayout from './Components/layouts/MainLayout.js';
 
 import { db } from './models/testDB.js';
 
-const store = Store.create(emptyStore, { db, useFullHistory: true });
+// const store = Store.create(emptyStore, { db, useFullHistory: true, reset: false });
+// const store = Store.create(emptyStore, { db, useFullHistory: true, reset: true });
+const store = Store.create(emptyStore, { db, useFullHistory: false, reset: false });
 store.signin.load();
 
 monitorChanges(db, store);
