@@ -9,7 +9,8 @@ const collections = {
   walk: doc => store.WS.updateWithDoc(doc),
 
   account: doc => store.AS.updateWithDoc(doc),
-  paymentSummary: doc => store.BP.updateWithDoc(doc)
+  // paymentSummary: doc => store.BP.updateWithDoc(doc)
+  paymentSummary: () => window.location.reload()
 };
 
 // lastSeq = 138;
