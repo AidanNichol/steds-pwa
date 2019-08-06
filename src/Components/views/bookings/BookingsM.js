@@ -45,7 +45,10 @@ const Bookings = inject('store')(
           account = store.MS.currentMember.accountId;
           accMembs = account.members;
         }
-        const closeWalkBookings = walkId => store.WS.walks.get(walkId).closeWalk(walkId);
+        const closeWalkBookings = walk => {
+          logit('closeWalk', walk._id, walk);
+          walk.closeWalk();
+        };
         const memberSelected = acc => {
           logit('memberSelected', acc);
           store.MS.setCurrentMember(acc.memId);
@@ -133,10 +136,7 @@ const Bookings = inject('store')(
         const closeit = walk => {
           return (
             walk.walkDate < _today && (
-              <button
-                onClick={() => closeWalkBookings(walk.walkId)}
-                style={{ marginLeft: 3 }}
-              >
+              <button onClick={() => closeWalkBookings(walk)} style={{ marginLeft: 3 }}>
                 X
               </button>
             )
