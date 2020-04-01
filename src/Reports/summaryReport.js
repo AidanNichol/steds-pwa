@@ -18,7 +18,7 @@ const Document = props => {
     width: '210mm',
     height: '297mm',
     boxSizing: 'border-box',
-    paddingRight: 10
+    paddingRight: 10,
   };
   return <div style={style}>{props.children}</div>;
 };
@@ -28,7 +28,7 @@ const Page = props => {
     backgroundColor: '#ffffff',
     justifyContent: 'flex-start',
     fontSize: 14,
-    breakBefore: 'page'
+    breakBefore: 'page',
   };
   return (
     <div style={{ ...style, ...props.style }}>
@@ -43,7 +43,7 @@ const Banner = ({ title, className }) => {
     justifyContent: 'space-between',
     fontSize: 10,
     display: 'grid',
-    gridTemplateColumns: '95px 1fr 95px'
+    gridTemplateColumns: '95px 1fr 95px',
   };
   return (
     <div className={className} style={style}>
@@ -60,7 +60,6 @@ const Banner = ({ title, className }) => {
 export const SummaryReport = inject('store')(({ store, printFull }) => {
   let docname = '/busSummary.pdf';
   logit('name', { docname });
-
   // title = 'St.Edwards Fellwalkers: ' + (printFull ? 'Full List' : ' Walk Day List');
   // walkDayBookingSheet(doc, printFull);
   // var title = 'St.Edwards Fellwalkers: Bus Lists';
@@ -70,17 +69,17 @@ export const SummaryReport = inject('store')(({ store, printFull }) => {
   return (
     <Document
       title="St.Edward's Members"
-      author="Booking System"
-      subject="Membership List"
+      author='Booking System'
+      subject='Membership List'
     >
       <Page title={' Walk Day List'}>
         <WalkDayBookingSheet {...{ store }} />
       </Page>
       <BusListRpt {...{ store, Page }} />
-      <Page title="CreditsOwed">
+      <Page title='CreditsOwed'>
         <CreditsOwedRpt {...{ store }} />
       </Page>
-      <Page title="Payments Due">
+      <Page title='Payments Due'>
         <PaymentsDueRpt {...{ store }} />
       </Page>
     </Document>

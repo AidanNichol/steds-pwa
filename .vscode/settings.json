@@ -1,3 +1,7 @@
 {
-  "svgviewer.enableautopreview": true
+  "svgviewer.previewcolumn": "Active",
+  "prettier.trailingComma": "all",
+  "prettier.singleQuote": true,
+  "prettier.jsxSingleQuote": true,
+  "prettier.disableLanguages": []
 }

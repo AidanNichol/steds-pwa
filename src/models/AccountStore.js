@@ -5,11 +5,13 @@ import {
   resolveIdentifier,
   getEnv,
   getRoot,
-  getSnapshot
+  getSnapshot,
 } from 'mobx-state-tree';
 import { Account } from './Account';
 import { db } from './testDB.js';
 import { traceId } from './traceIt';
+// import setPrototypeOf from 'setprototypeof';
+
 const logit = require('logit')('model/AccountStore');
 /* 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -19,10 +21,10 @@ const logit = require('logit')('model/AccountStore');
 export const AccountStore = types
   .model('AccountStore', {
     accounts: types.array(Account),
-    currentAccount: types.maybe(types.reference(Account))
+    currentAccount: types.maybe(types.reference(Account)),
   })
   .volatile(() => ({
-    db: null
+    db: null,
   }))
   .actions(self => ({
     load: flow(function* load(n = 1000) {
@@ -33,7 +35,7 @@ export const AccountStore = types
           include_docs: true,
           startkey: 'A',
           endkey: 'A9999999',
-          limit: n
+          limit: n,
         });
         const accounts = data.rows
           .map(row => row.doc)
@@ -46,11 +48,45 @@ export const AccountStore = types
         self.state = 'error';
       }
     }),
+    getDumpData: flow(function*() {
+      const db = getEnv(self).db;
+      const dumpName = getEnv(self).useFullHistory ? 'dumpDataV1' : 'dumpDataV2';
+
+      const result = yield db.allDocs({ key: dumpName, include_docs: true });
+      logit('getDumpData', { dumpName, result });
+      const accs = result.rows[0].doc.accs;
+      accs.sort((a, b) => a._id.localeCompare(b._id));
+      return accs.reduce((indx, acc) => {
+        indx[acc._id] = acc;
+        return indx;
+      }, {});
+
+      // return result.rows[0].doc.accs.sort((a, b) => a.accId.localeCompare(b.accId));
+    }),
+    dumpData: flow(function*() {
+      try {
+        const db = getEnv(self).db;
+        const useFullHistory = getEnv(self).useFullHistory;
+        const dumpName = useFullHistory ? 'dumpDataV2' : 'dumpDataV3';
+        const oldData = yield db.allDocs({ key: dumpName, include_docs: true });
+        const data = oldData.rows.length > 0 ? oldData.rows[0].doc : { _id: dumpName };
+        logit('Dumping data to ' + dumpName, oldData, data);
+
+        data.accs = self.accounts.map(acc => acc.dumpData());
+        logit('dumpData data', data, db);
+        yield db.put(data);
+        return data.accs;
+      } catch (error) {
+        logit('dumpData Error', error);
+      }
+    }),
     loadTestData(accounts) {
       applySnapshot(self.accounts, accounts);
     },
 
     getAllAccountStatus() {
+      const lastPayment = getRoot(self).BP.lastPaymentsBanked;
+      logit('lastPayment', lastPayment, getRoot(self).BP);
       self.accounts.forEach(account => {
         account.accountStatusNew();
       });
@@ -104,7 +140,7 @@ export const AccountStore = types
         logit(`dbupdated (${res.id})`, account._id, account._rev, '->', res.rev);
         account.update({ _rev: res.rev, dirty: false });
       });
-    })
+    }),
   }))
   .views(self => ({
     findAccount(accId) {
@@ -123,5 +159,5 @@ export const AccountStore = types
     },
     get accountsActiveThisPeriod() {
       return self.accounts.filter(acc => acc.activeThisPeriod);
-    }
+    },
   }));

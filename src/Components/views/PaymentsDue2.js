@@ -87,7 +87,7 @@ const memberRecipt = observer(props => {
         </span>
         <span className="owed">{`£${-account.balance}`}</span>
       </div>
-      {account.unclearedBookings
+      {(account.currentLogs || [])
         .filter(bkng => bkng.outstanding && bkng.amount !== 0)
         .map(bkng => (
           <Detail bkng={bkng} key={bkng.dat + 'xx'} />

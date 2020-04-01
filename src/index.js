@@ -23,6 +23,8 @@ import { monitorChanges } from './ducks/dbChangeMonitoringMobx.mjs';
 import * as serviceWorker from './serviceWorker';
 // import { store, StoreContext } from './models/StoreContext.js';
 import { Provider } from 'mobx-react';
+import { IconsLoad } from './fontAwesome2.js';
+
 import MainLayout from './Components/layouts/MainLayout.js';
 
 import { db } from './models/testDB.js';
@@ -36,9 +38,12 @@ monitorChanges(db, store);
 // store.load().then(() => {
 ReactDOM.render(
   <Provider store={store}>
-    <MainLayout />
+    <div>
+      <IconsLoad />
+      <MainLayout />
+    </div>
   </Provider>,
-  document.getElementById('root')
+  document.getElementById('root'),
 );
 // });
 

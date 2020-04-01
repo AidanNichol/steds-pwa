@@ -3,7 +3,7 @@ const nbsp = '\u00A0';
 
 export class FundsManager {
   constructor(trace) {
-    this.available = 0;
+    this.available = { '+': 0, T: 0, P: 0 };
     this.balance = 0;
     this.cashReceivedThisPeriod = 0;
     this.traceMe = Boolean(trace);
@@ -11,6 +11,7 @@ export class FundsManager {
     this.activeThisPeriod = false;
     this.newFunds = 0;
     this.prevBalance = 0;
+    this.payType = '?';
     this.realActivity = false;
   }
   get okToAddDummyPayments() {
@@ -55,6 +56,18 @@ export class FundsManager {
         uncleared = log;
         // console.log( log.dat, log0.text, log0.amount, this.balance, 'not enough funds', );
       }
+      // if (this.newFunds === this.balance && !log.outstanding) {
+      //   this.traceMe &&
+      //     console.log(
+      //       'setting restartPt',
+      //       log.req,
+      //       this.newFunds,
+      //       this.balance,
+      //       this,
+      //       log
+      //     );
+      //   log.restartPt = true;
+      // }
     });
     logs[0].booking.update({ outstanding });
     return !outstanding;
@@ -62,8 +75,8 @@ export class FundsManager {
 
   addCredit(log) {
     if (!log.ignore) {
-      this.available += Math.abs(log.amount);
-      this.balance = this.available;
+      this.available['+'] += Math.abs(log.amount);
+      this.balance = Object.values(this.available).reduce((sum, it) => sum + it, 0);
       // this.applyFunds(log.activeThisPeriod || false);
     }
 
@@ -81,27 +94,38 @@ export class FundsManager {
       this.transferSurplusToCredit();
       this.activeThisPeriod = log.activeThisPeriod;
     }
-    if (amount !== 0) this.available += amount;
+    if (amount !== 0) this.available[log.req[0]] += amount;
     this.prevBalance = this.balance;
+    this.prevFunds = this.available['P'] + this.available['T'];
+    this.payType = log.req[0];
     this.balance += amount;
     this.newFunds = amount;
     this.showLog(log, ' ', this.available);
 
     // this.applyFunds(log.activeThisPeriod);
   }
-  transferSurplusToCredit() {}
+  transferSurplusToCredit() {
+    if (this.activeThisPeriod || this.available.P + this.available.T === 0) return;
+    this.available['+'] += this.available.P + this.available.T;
+    this.available.P = 0;
+    this.available.T = 0;
+    // this.showLog();
+  }
 
   useFunds(log) {
     let owing = log.amount;
-
-    if (!owing) return;
-    const spend = Math.min(owing, this.available);
-    this.available -= spend;
-    owing -= spend;
-    this.balance -= spend;
-    log.update({
-      paid: spend,
-      balance: this.balance,
+    Object.entries(this.available).forEach(([key, val]) => {
+      if (!owing) return;
+      const spend = Math.min(owing, val);
+      this.available[key] -= spend;
+      owing -= spend;
+      this.balance -= spend;
+      log.update({
+        paid: { ...log.paid, [key]: log.paid[key] + spend },
+        balance: this.balance,
+      });
+      // if (key === 'P')
+      //   log.update({ activeThisPeriod: log.activeThisPeriod || this.activeThisPeriod });
     });
     log.update({ outstanding: false });
     this.showLog(log, '👍🏽');

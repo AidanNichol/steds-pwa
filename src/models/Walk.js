@@ -5,7 +5,7 @@ import {
   decorate,
   flow,
   getSnapshot,
-  getEnv
+  getEnv,
   // addMiddleware
 } from 'mobx-state-tree';
 import { atomic /* actionLogger */ } from 'mst-middlewares';
@@ -33,9 +33,9 @@ export const Walk = types
     venue: types.string,
     shortCode: types.maybe(types.string),
     lastUpdate: types.maybe(types.string),
-    bookings: types.map(types.late(() => Booking))
+    bookings: types.map(types.late(() => Booking)),
   })
-  // .volatile(() => ({ dirty: false }))
+  .volatile(() => ({ dirty: false }))
   .postProcessSnapshot(snp => {
     const { bookings: oBookings, ...rest } = snp;
     const bookings = {};
@@ -109,7 +109,7 @@ export const Walk = types
         free,
         available: free - totals.W,
         full: free <= totals.W,
-        display
+        display,
       };
     },
     get areAllBookingsCompleted() {
@@ -120,7 +120,7 @@ export const Walk = types
     },
     getBooking(memId) {
       return self.bookings.get(self._id + memId);
-    }
+    },
   }))
   .actions(self => {
     function* bookingChange(memId, req, force = false) {
@@ -172,9 +172,9 @@ export const Walk = types
         const res = yield db.put(getSnapshot(self));
         if (!res.ok || res.error) throw res;
         logit('dbupdated', self._id, self._rev, '->', res.rev);
-        self.dirty = false;
-        self._rev = res.rev;
-      })
+        // self.dirty = false;
+        // self._rev = res.rev;
+      }),
     };
   })
   .actions(self => ({
@@ -202,5 +202,5 @@ export const Walk = types
         .sort((a, b) => a.lastUpdate.localeCompare(b.lastUpdate));
       WL.forEach((bkng, i) => (bkng.wlPosition = i + 1));
       return WL;
-    }
+    },
   }));

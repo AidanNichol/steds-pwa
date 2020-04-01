@@ -7,13 +7,14 @@ module.exports = {
     // in CommonJS
     node: true,
     es6: true,
-    jest: true
+    jest: true,
   },
   // React
   plugins: ['react', 'prettier'],
-  extends: ['eslint:recommended', 'prettier', 'prettier/standard'],
+  extends: ['eslint:recommended', 'prettier'],
   // To give you an idea how to override rule options:
   rules: {
+    'prettier/prettier': ['error'],
     // 'no-unused-vars': 0,
     'object-curly-newline': 0,
     quotes: [0, 'single'],
@@ -32,8 +33,8 @@ module.exports = {
         objects: 'ignore',
         imports: 'ignore',
         exports: 'ignore',
-        functions: 'never'
-      }
+        functions: 'never',
+      },
     ],
     'react/display-name': 0,
     'react/jsx-boolean-value': 1,
@@ -49,6 +50,6 @@ module.exports = {
     'react/react-in-jsx-scope': 1,
     'react/self-closing-comp': 1,
     'react/sort-comp': 1,
-    strict: 2
-  }
+    strict: 2,
+  },
 };

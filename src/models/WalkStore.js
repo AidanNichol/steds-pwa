@@ -6,7 +6,7 @@ import {
   getRoot,
   resolveIdentifier,
   onPatch,
-  getSnapshot
+  getSnapshot,
 } from 'mobx-state-tree';
 import { DS } from './MyDateFns.js';
 import { Walk } from './Walk';
@@ -20,13 +20,13 @@ const logit = require('logit')('model/WalkStore');
 export const WalkStore = types
   .model('WalkStore', {
     walks: types.array(Walk),
-    currentWalk: types.maybe(types.reference(Walk))
+    currentWalk: types.maybe(types.reference(Walk)),
   })
   .volatile(() => ({
     db: null,
     DS: null,
     useFullHistory: null,
-    oldestWalk: null
+    oldestWalk: null,
   }))
   .views(self => ({
     get walksValues() {
@@ -113,7 +113,7 @@ export const WalkStore = types
         .map(walk => walk._id)
         .sort(valCmp)
         .pop();
-    }
+    },
   }))
   .actions(self => ({
     setCurrentWalk(id) {
@@ -148,7 +148,7 @@ export const WalkStore = types
           darkAgesStarts: self.darkAgesStarts,
           availableWalksStart: self.availableWalksStart,
           nextPeriodStart: self.nextPeriodStart,
-          lastClosed: self.lastClosed
+          lastClosed: self.lastClosed,
         });
         return;
       } catch (error) {
@@ -190,8 +190,9 @@ export const WalkStore = types
 
       self.walks.forEach(walk => {
         onPatch(walk, (patch, unpatch) => {
+          // logit('onPatch', walk._id, walk.venue, patch, unpatch);
           !useFullHistory && logit('onPatch', walk._id, walk.venue, patch, unpatch);
-          walk.dirty = true;
+          if (patch.path !== '/_rev') walk.dirty = true;
         });
         for (let booking of walk.bookings.values()) {
           const account = booking.member.account;
@@ -207,7 +208,7 @@ export const WalkStore = types
         walk = Walk.create(doc);
         self.walks.push(walk);
       }
-    }
+    },
   }));
 
 var coll = new Intl.Collator();

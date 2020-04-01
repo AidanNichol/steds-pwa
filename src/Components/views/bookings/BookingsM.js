@@ -93,7 +93,7 @@ const Bookings = inject('store')(
               style={{ position: 'relative' }}
               key={memId}
             >
-              <Icon type={status} className="normal " />
+              <Icon type={status} className="normal " size="2x" />
               <span className="normal annotation">{annotation}</span>
               <Icon
                 className={'hotspot ' + width}

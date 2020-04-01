@@ -1,4 +1,4 @@
-import { types, getParent, getRoot, getEnv } from 'mobx-state-tree';
+import { types, getParent, getEnv } from 'mobx-state-tree';
 import { Member } from './Member';
 import { BookingLog } from './BookingLog';
 import { tBookingStatus } from './customTypes';
@@ -17,7 +17,7 @@ const chargeFactor = {
   C: 0.5,
   CX: -0.5,
   CL: -0.5,
-  A: 0
+  A: 0,
 };
 //┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 //┃   Booking                                                ┃
@@ -32,13 +32,13 @@ export const Booking = types
     logs: types.array(BookingLog),
     ignore: types.optional(types.boolean, true),
     lastUpdate: types.maybe(types.string),
-    completed: types.maybe(types.string)
+    completed: types.maybe(types.string),
   })
   .volatile(() => ({
     free: false,
     fee: 8,
     hideable: false,
-    billable: false
+    billable: false,
   }))
   .preProcessSnapshot(snp => {
     if (!snp) return snp;
@@ -91,16 +91,16 @@ export const Booking = types
     rationalizeLogs(fee = 8, canHide) {
       const trace = self.id === 'W2019-04-13M1092';
       let free = false;
-      let paymentPeriodStart = getRoot(self).BP.lastPaymentsBanked;
+      // let paymentPeriodStart = getRoot(self).BP.lastPaymentsBanked;
       let lastLog;
       self.logs.forEach(log => {
-        let activeThisPeriod = log.dat > paymentPeriodStart;
-        let hideable = canHide && !activeThisPeriod;
+        // let activeThisPeriod = log.dat > paymentPeriodStart;
+        let hideable = canHide && !log.activeThisPeriod;
         if (/^[BC]/.test(log.req)) self.billable = true;
         if (log.req === 'BL') free = true;
         if (log.req === 'BX') free = false;
         let amount = free ? 0 : fee * chargeFactor[log.req];
-        log.update({ amount, hideable, activeThisPeriod });
+        log.update({ amount, hideable });
         if (
           lastLog &&
           (lastLog.req + 'X' === log.req || lastLog.req === log.req + 'X') &&
@@ -108,10 +108,10 @@ export const Booking = types
         ) {
           const upd = {
             hideable: true,
-            activeThisPeriod: false,
+            // activeThisPeriod: false,
             ignore: true,
             amount: 0,
-            cancelled: true
+            cancelled: true,
           };
 
           lastLog.update(upd);
@@ -143,7 +143,7 @@ export const Booking = types
       });
       self.update(rest);
       account.accountStatusNew();
-    }
+    },
     // afterCreate() {
     //   const root = getRoot(self);
     //   if (!root.MS || root.MS.members.length === 0) return;
@@ -157,5 +157,5 @@ export const Booking = types
     },
     get memId() {
       return self.member;
-    }
+    },
   }));

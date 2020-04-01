@@ -1,4 +1,4 @@
-import { types, getParent } from 'mobx-state-tree';
+import { types, getParent, getRoot } from 'mobx-state-tree';
 import { tLogDate, tWalkId } from './customTypes';
 import { DS } from './MyDateFns.js';
 
@@ -23,20 +23,27 @@ export const AccountLog = types
     type: 'A',
     amount: types.optional(types.number, 0),
     creditCarriedOver: types.optional(types.number, 0),
-    oldestWalk: types.maybe(tWalkId)
+    oldestWalk: types.maybe(tWalkId),
   })
   .volatile(() => ({
     balance: 0,
     toCredit: 0,
     historic: false,
     hideable: true,
-    clearedBy: types.maybe(tLogDate)
+    clearedBy: types.maybe(tLogDate),
   }))
   .preProcessSnapshot(snapshot => {
-    let { logsFrom, restartPoint, clearedBy, ...snp } = snapshot; //eslint-disable:no-unused-vars
+    let { logsFrom, restartPoint, clearedBy, dispDate, text, ...snp } = snapshot; //eslint-disable:no-unused-vars
+    if (text) snp.note = text;
     return { ...snp };
   })
   .views(self => ({
+    get activeThisPeriod() {
+      const root = getRoot(self);
+      if (!root.BP) return false;
+      var paymentPeriodStart = root.BP.lastPaymentsBanked;
+      return self.dat > paymentPeriodStart;
+    },
     get account() {
       return getParent(self, 2);
     },
@@ -70,7 +77,7 @@ export const AccountLog = types
         'balance',
         'hideable',
         'creditCarriedOver',
-        'oldestWalk'
+        'oldestWalk',
       ]);
     },
     printLog() {
@@ -82,9 +89,9 @@ export const AccountLog = types
         self.amount,
         self.balance,
         self.restartPt,
-        self.hideable
+        self.hideable,
       );
-    }
+    },
   }))
   .actions(self => ({
     update(updates) {
@@ -95,5 +102,5 @@ export const AccountLog = types
     },
     deletePayment() {
       self.account.deletePayment(self);
-    }
+    },
   }));

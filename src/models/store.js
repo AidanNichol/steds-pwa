@@ -17,7 +17,7 @@ export const emptyStore = {
   WS: { walks: [] },
   BP: {},
   router: { page: 'buslists' },
-  signin: {}
+  signin: {},
 };
 export const Store = types
   .model('Store', {
@@ -29,20 +29,20 @@ export const Store = types
     signin: types.late(() => SigninState),
     loading: false,
     loaded: false,
-    loadingStatus: types.array(types.string)
+    loadingStatus: types.array(types.string),
   })
   .volatile(() => ({
     showReportPortal: false,
     ReportComponent: null,
-    reportProps: {}
+    reportProps: {},
   }))
   .actions(self => ({
     load: flow(function* load() {
+      self.report('Loading lastBanking');
+      yield self.BP.load();
       self.report(' Loading members');
       yield self.MS.load();
       if (self.MS.members.length === 0) yield self.MS.load();
-      self.report('Loading lastBanking');
-      yield self.BP.load();
       self.report('Loading accounts');
       yield self.AS.load();
       self.report(' Loading walks');
@@ -67,26 +67,26 @@ export const Store = types
         { fn: self.reportStart, text: ' Checking DB' },
         { fn: self.wakeStep, flow: true },
         { fn: self.reportEnd, text: 'DB responded' },
-        { fn: self.reportStart, text: ' Loading Members' },
-        { fn: self.MS.load, flow: true },
-        {
-          fn: self.reportEnd,
-          text: 'Members loaded: ',
-          data: () => self.MS.members.length
-        },
         { fn: self.reportStart, text: ' Loading Banking' },
         { fn: self.BP.load, flow: true },
         {
           fn: self.reportEnd,
           text: 'Last Banked: ',
-          data: () => self.BP.lastPaymentsBanked
+          data: () => self.BP.lastPaymentsBanked,
+        },
+        { fn: self.reportStart, text: ' Loading Members' },
+        { fn: self.MS.load, flow: true },
+        {
+          fn: self.reportEnd,
+          text: 'Members loaded: ',
+          data: () => self.MS.members.length,
         },
         { fn: self.reportStart, text: ' Loading Accounts' },
         { fn: self.AS.load, flow: true },
         {
           fn: self.reportEnd,
           text: 'Accounts loaded: ',
-          data: () => self.AS.accounts.length
+          data: () => self.AS.accounts.length,
         },
         { fn: self.reportStart, text: ' Load walks' },
         { fn: self.WS.load, flow: true },
@@ -105,18 +105,18 @@ export const Store = types
         {
           fn: self.reportEnd,
           text: 'Accounts updated: ',
-          data: () => self.AS.bulkChanges
+          data: () => self.AS.bulkChanges,
         },
         { fn: self.reportStart, text: ' Bulk Update Walks' },
         { fn: self.WS.bulkUpdateWalks, flow: true },
         {
           fn: self.reportEnd,
           text: 'Walks updated: ',
-          data: () => self.WS.bulkChanges
+          data: () => self.WS.bulkChanges,
         },
         { fn: self.reportStart, text: ' Loading finished' },
         { fn: self.reportStart, text: '', wait: 3000 },
-        { fn: self.loadDone }
+        { fn: self.loadDone },
       ];
       self.nextStep();
     },
@@ -165,6 +165,7 @@ export const Store = types
     loadDone: function loadDone() {
       self.loading = false;
       self.loaded = true;
+      self.router.page = 'audit';
       return self;
     },
     loadTestData(members, accounts, walks) {
@@ -173,10 +174,10 @@ export const Store = types
       self.WS.loadTestData(walks);
       self.AS.categorizeAllBookingLogs();
       self.AS.getAllAccountStatus();
-    }
+    },
   }))
   .views(self => ({
     getAccount(id) {
       return resolveIdentifier(Account, self, id);
-    }
+    },
   }));

@@ -29,13 +29,12 @@ export const actions = self => ({
 
     aLogs = aLogs.filter(log => log.req[0] !== '_');
 
-    let activeThisPeriod = false;
     let hideable = true;
     for (let i = 0; i < aLogs.length; i++) {
       const aLog = aLogs[i];
-      aLog.activeThisPeriod = aLog.dat > paymentPeriodStart;
+      // aLog.activeThisPeriod = aLog.dat > paymentPeriodStart;
       hideable = hideable && !aLog.activeThisPeriod;
-      traceMe && logit('alog', aLog);
+      traceMe && logit('alog', aLog, paymentPeriodStart);
       // setSomeFlags(aLog);
 
       funds.addPayment(aLog);
@@ -54,13 +53,14 @@ export const actions = self => ({
 
       bLogs = res.unresolvedLogs;
     }
+    if (balance !== 0) console.error('non-zero balance', balance, self.name, bLogs, self);
     /*
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
     ┃   Bookings uncleared - check for clearance via credit    ┃
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
     funds.resetNewFunds();
     const res = processLogs({ bLogs, funds, traceMe, balance, hideable });
-    traceMe && logit('uncleared stuff', res);
+    traceMe && logit('uncleared stuff', res, funds);
     balance = res.balance;
     hideable = res.hideable;
 
@@ -73,10 +73,10 @@ export const actions = self => ({
 
     /*
     ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-    ┃       uncleared Bookings - calculate final balance       ┃
+    ┃       uncleared Bookings - update hideable               ┃
     ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ */
     hideable = false;
-    balance = funds.balance;
+    // balance = funds.balance;
     res.unresolvedLogs
       .slice()
       .sort(cmpDate)
@@ -86,7 +86,7 @@ export const actions = self => ({
         !(log.ignore && log.hideable) && log.update({ hideable });
       });
 
-    self.activeThisPeriod = activeThisPeriod || funds.activeThisPeriod;
+    // self.activeThisPeriod = activeThisPeriod || funds.activeThisPeriod;
     self.funds = funds;
     self.balance = balance;
     currentLogs.push(...res.unresolvedLogs);
@@ -99,7 +99,7 @@ export const actions = self => ({
     // self.extractUnresolvedWalks();
     // logit('returning', self.name, self);
     return true;
-  }
+  },
 });
 
 export function processLogs(args) {
@@ -174,7 +174,7 @@ export function processLogs(args) {
             log.update({ delayedDat });
           return log;
         })
-        .sort(cmpDate)
+        .sort(cmpDate),
     );
   }
   //┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -182,7 +182,8 @@ export function processLogs(args) {
   //┃   Add the cleared logs to the appropriate pile                    ┃
   //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
   balance = funds.balance;
-  clearedLogs = reSortAndAdjustBalance(clearedLogs, prevBalance, funds.balance, aLog);
+  traceMe && logit('pre resort', prevBalance, funds.balance, balance);
+  clearedLogs = reSortAndAdjustBalance(clearedLogs, prevBalance, aLog);
   traceMe && logit('post resort', prevBalance, funds.balance, balance);
   traceMe && logit('post resort', clearedLogs);
   hideable = clearedLogs.reduce((res, log) => res && log.hideable, hideable);
@@ -190,9 +191,9 @@ export function processLogs(args) {
     if (log.cancelled) return;
     log.update({ hideable });
   });
-  if (aLog || balance === 0) {
-    resolvedLogs.push(...clearedLogs);
-  } else unresolvedLogs.push(...clearedLogs);
+  // if (aLog || balance === 0) {
+  resolvedLogs.push(...clearedLogs);
+  // } else unresolvedLogs.push(...clearedLogs);
   //┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
   //┃   if there's a payment log then add it to resolved                ┃
   //┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -211,7 +212,7 @@ export function processLogs(args) {
       unresolvedLogs,
       balance,
       hideable,
-      restartPt
+      restartPt,
     });
   return { resolvedLogs, unresolvedLogs, balance, hideable, restartPt };
 }
@@ -229,7 +230,7 @@ function getOldestWalk(bLogs) {
   });
   return oldestWalk;
 }
-function reSortAndAdjustBalance(clearedLogs, prevBalance, endBalance = 0, aLog) {
+function reSortAndAdjustBalance(clearedLogs, prevBalance, aLog) {
   if (clearedLogs.length === 0) return clearedLogs;
   const cLogs = clearedLogs.sort(cmpDate);
 

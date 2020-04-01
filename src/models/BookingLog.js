@@ -19,7 +19,7 @@ export const BookingLog = types
     dat: tLogDate,
     delayedDat: types.maybe(tLogDate),
     who: types.maybe(types.string),
-    note: types.maybe(types.string)
+    note: types.maybe(types.string),
   })
   .preProcessSnapshot(snapshot => {
     let { dat, ...snp } = snapshot;
@@ -36,16 +36,16 @@ export const BookingLog = types
     clearedBy: '',
     restartPt: false,
     balance: 0,
-    outstanding: false,
+    outstanding: true,
     // member: getParent(self, 2).memId,
     // account: getParent(self, 2).memId.accountId,
 
     // amount: self.req !== 'A' ? (self.walk.fee || 8) * chargeFactor[self.req] : 0,
     // owing: /^B|C$/.test(self.req) ? Math.abs(self.amount) : 0,
-    paid: { P: 0, T: 0, '+': 0 }
+    paid: { P: 0, T: 0, '+': 0 },
   }))
   .preProcessSnapshot(snp => {
-    let { clearedBy, restartPt, outstanding, ...rest } = snp;
+    let { clearedBy, restartPt, outstanding, activeThisPeriod, ...rest } = snp;
     return rest;
   })
   .actions(self => ({
@@ -67,9 +67,15 @@ export const BookingLog = types
       self.walk.bookingChange(self.booking.member._id, 'BX', true);
       logit('resetLateCancelation', self.booking, self.account.balance);
       self.booking.member.account.showAllLogs('reset Cancel', 15, true);
-    }
+    },
   }))
   .views(self => ({
+    get activeThisPeriod() {
+      const root = getRoot(self);
+      var paymentPeriodStart = root.BP.lastPaymentsBanked;
+      return self.dat > paymentPeriodStart;
+    },
+
     get dispDate() {
       return DS.dispDate(self.dat);
     },
@@ -110,7 +116,7 @@ export const BookingLog = types
       if (!/^B|BL|C$/.test(self.booking.status)) return false;
       const last = self.booking.logs.reduce(
         (res, log) => (/B|C/.test(log.req) ? log : res),
-        {}
+        {},
       );
       return last === self;
     },
@@ -134,11 +140,19 @@ export const BookingLog = types
         /^[BC]/.test(self.req) || self.type === 'A' ? self.balance : 0,
         self.restartPt,
         self.hideable,
-        self.completedBy
+        self.completedBy,
       );
     },
     showLog() {
-      const res = _.pick(self, ['dispDate', 'req', 'name', 'text', 'amount', 'balance']);
+      const res = _.pick(self, [
+        'dat',
+        'dispDate',
+        'req',
+        'name',
+        'text',
+        'amount',
+        'balance',
+      ]);
       res.completed = self.booking.completed;
       res.effDate = self.effDate;
       res.flags =
@@ -146,5 +160,5 @@ export const BookingLog = types
         (self.booking.billable ? '£' : '-') +
         (self.name ? ' ' + self.name : '');
       return res;
-    }
+    },
   }));

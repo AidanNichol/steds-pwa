@@ -15,7 +15,7 @@ var logit = Logit('components/views/bookings/PaymentStatusLog');
 const uiStateModel = types
   .model({
     showMode: types.optional(types.number, 2),
-    showAll: types.optional(types.boolean, false)
+    showAll: types.optional(types.boolean, false),
   })
   .actions(self => ({
     changeMode(v) {
@@ -25,7 +25,7 @@ const uiStateModel = types
     toggleShowAll() {
       self.showAll = !self.showAll;
       logit('showAll', self.showAll);
-    }
+    },
   }));
 const uiState = uiStateModel.create();
 const EditButton = ({ startDate, log }) => {
@@ -34,9 +34,9 @@ const EditButton = ({ startDate, log }) => {
     return (
       <span
         onClick={() => log.resetLateCancellation(log.walkId, log.memId)}
-        className="edit_button"
+        className='edit_button'
       >
-        <Icon type="BL" /> &rArr; <Icon type="BX" />
+        <Icon type='BL' /> &rArr; <Icon type='BX' />
       </span>
     );
   }
@@ -44,10 +44,10 @@ const EditButton = ({ startDate, log }) => {
     return (
       <span
         onClick={() => log.deletePayment()}
-        className="edit_button"
+        className='edit_button'
         style={{ paddingLeft: '1em' }}
       >
-        <Icon type="Cancel" />
+        <Icon name='Cancel' />
       </span>
     );
   }
@@ -58,8 +58,13 @@ class TheTable extends React.Component {
   render() {
     const { logs, showAll, lastBanking, ...rest } = this.props;
     logit('TheTable', { logs, rest, props: this.props });
+    let bal = 0;
+    logs.forEach((log, i) => {
+      bal += (log.type === 'A' ? +1 : -1) * log.amount;
+      if (bal !== log.balance) logit('misbalance', bal, i, log);
+    });
     return (
-      <div className="scrollBox">
+      <div className='scrollBox'>
         {logs
           .filter(log => (showAll || !log.hideable) && log.req[0] !== '_')
           .map((log, i) => {
@@ -68,47 +73,45 @@ class TheTable extends React.Component {
               logRec: true,
               outstanding: log.booking && !log.booking.completed,
               historic: log.hideable,
-              cleared: log.amount !== 0 && log.balance === 0
+              cleared: log.amount !== 0 && log.balance === 0,
             });
             let aCl = classNames({
               logData: true,
               logAmount: true,
               logPay: log.req === 'P',
               fee: log.req !== 'P' && log.amount < 0,
-              credit: log.amount > 0 && log.req !== 'A'
+              credit: log.amount > 0 && log.req !== 'A',
             });
             let bCl = classNames({
               logData: true,
               logBal: true,
               credit: log.balance > 0 && log.req[0] !== 'W',
-              owing: log.outstanding
+              owing: log.outstanding,
               // owing: log.booking && !log.booking.completed && log.amount !== 0
             });
             return (
               <div key={i} className={rCl}>
-                <span className="logDate" title={log.dat}>
+                <span className='logDate' title={log.dat}>
                   <span
                     style={{
                       display: 'inline-block',
-                      width: 12
+                      width: 12,
                     }}
                   >
                     {log.outOfSequence ? (
                       <img
-                        src="../assets/long-arrow-down.svg"
+                        src='../assets/long-arrow-down.svg'
                         style={{ width: 12, paddingRight: 2 }}
-                        alt=""
+                        alt=''
                       />
                     ) : null}
                   </span>
                   {log.dispDate}
                 </span>
                 <Icon type={log.req} />
-                <span className="logText">
-                  {log.type !== 'A' && log.name && (
-                    <span className="name">{log.name} </span>
-                  )}
-                  <span className="text" title={log.type === 'W' ? log.walkId : ''}>
+                <span className='logText'>
+                  {log.name && <span className='name'>{log.name} </span>}
+                  <span className='text' title={log.type === 'W' ? log.walkId : ''}>
                     {log.text}
                   </span>
                 </span>
@@ -150,7 +153,7 @@ function ChangeLogR(props) {
   };
   return (
     <div className={'logsTable ' + (props.className || '')}>
-      <span className="showMode screenOnly">
+      <span className='showMode screenOnly'>
         <span onClick={() => changeMode(1)} className={showMode === 1 ? 'active' : ''}>
           Old
         </span>
@@ -162,18 +165,18 @@ function ChangeLogR(props) {
         </span>
       </span>
 
-      <div className="logHeader">
-        <span className="logDate">Date</span>
-        <Icon type="Blank" style={{ opacity: 0 }} />
-        <span className="logText">Event</span>
+      <div className='logHeader'>
+        <span className='logDate'>Date</span>
+        <Icon name='Blank' style={{ opacity: 0 }} />
+        <span className='logText'>Event</span>
         <span style={{ width: 8, display: 'inline-block' }}>&nbsp;</span>
-        <span className="logAmount">Exp.</span>
-        <span className="logAmount">Inc.</span>
-        <span className="logBal">Balance</span>
-        <span onClick={toggleShowAll} className="showAll screenOnly">
+        <span className='logAmount'>Exp.</span>
+        <span className='logAmount'>Inc.</span>
+        <span className='logBal'>Balance</span>
+        <span onClick={toggleShowAll} className='showAll screenOnly'>
           {showAll ? '🔽' : '▶️️'}
         </span>
-        <span onClick={requestPrint} className="showAll print screenOnly">
+        <span onClick={requestPrint} className='showAll print screenOnly'>
           🖨
         </span>
       </div>

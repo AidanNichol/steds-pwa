@@ -43,7 +43,7 @@ class TooltipButton extends React.Component {
         style={{ position: 'relative', ...style }}
         {...other}
       >
-        {icon ? <Icon name={icon} style={iconStyle} /> : null}{' '}
+        {icon ? <Icon name={icon} style={{ fontSize: '3em', ...iconStyle }} /> : null}{' '}
         {img ? <img src={img} alt="" style={iconStyle} /> : null}
         {label ? label : this.props.children}
         {overlay ? <span className="overlay">{overlay}</span> : ''}
