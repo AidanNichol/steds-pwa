@@ -11,11 +11,11 @@ div.panel-title {
 
 .bus-list .panel-contents {
   display: grid;
-  grid-template-rows: 80px;
-  grid-template-columns: 3fr 20px 2fr;
+  grid-template-rows: 60px;
+  grid-template-columns: 4fr 20px 2fr;
   grid-template-areas:
-    "select xx buttons"
-    "booked xx others ";
+    'select xx buttons'
+    'booked xx others ';
 
   .walk-select {
     grid-area: select;
@@ -39,10 +39,10 @@ div.panel-title {
 
   .booked-members {
     grid-area: booked;
-  }
-
-  .others {
-    grid-area: others;
+    // grid-row-start: 2;
+    // grid-row-end: -1;
+    // grid-column-start: 1;
+    // grid-column-end: 2;
   }
 }
 
@@ -50,8 +50,9 @@ div.panel-title {
   .booked-members {
     max-height: 500px;
     display: grid;
-    grid-template-rows: repeat(18, 1fr);
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(14);
+    grid-template-columns: repeat(4, 1fr);
+    row-gap: 0;
   }
 
   .others {
@@ -63,7 +64,7 @@ div.panel-title {
   .booked-cars,
   .waiting-list {
     .member {
-      margin-bottom: 10px;
+      // margin-bottom: 10px;
     }
 
     button {
@@ -76,21 +77,23 @@ div.panel-title {
   .booked-members,
   .waiting-list {
     align-items: start;
-    grid-gap: 8px;
+    column-gap: 8px;
+    row-gap: 0;
     grid-auto-flow: column;
 
     .seats-available {
-      grid-row: 17 / span 2;
-      grid-column: 3;
-      width: 180px;
-      margin-left: 10px;
-      margin-right: 10px;
+      grid-row: 14 / span 2;
+      grid-column: 4;
+      width: 100%;
+      // margin-left: 10px;
+      // margin-right: 10px;
       border: black thin solid;
       border-radius: 5px;
       text-align: center;
     }
 
     .member {
+      position: relative;
       color: green;
       display: flex;
       justify-content: space-between;
