@@ -1,6 +1,6 @@
 {
   "name": "steds-pwa",
-  "version": "2.1.6-8",
+  "version": "2.1.6-9",
   "homepage": "https://aidan.a2hosted.com/booking",
   "proxy": "http://localhost:1377",
   "dependencies": {
