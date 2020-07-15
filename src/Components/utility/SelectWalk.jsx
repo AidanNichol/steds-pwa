@@ -1,7 +1,7 @@
 /* jshint quotmark: false, jquery: true */
 import React from 'react';
 
-import Logit from 'logit';
+import Logit from '../../logit';
 var logit = Logit('components/utility/SelectWalk');
 const toJS = (x) => x;
 var SelectWalk = function (props) {

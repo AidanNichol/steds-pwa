@@ -5,7 +5,7 @@ import { PaymentsMade } from './PaymentsMade.jsx';
 // import {mapStoreToProps as buildDoc} from '../views/PaymentsSummary';
 
 // import fs from 'fs';
-import Logit from 'logit';
+import Logit from '../../logit';
 var logit = Logit('components/containers/Payments-mobx');
 
 export const PaymentsMST = () => {

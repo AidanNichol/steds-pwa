@@ -1,17 +1,17 @@
 /* jshint quotmark: false, jquery: true */
-import React, { useState } from 'react';
+import React from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-
 import classnames from 'classnames';
 import { EditMemberData } from './EditMemberDataH.jsx';
 import TooltipButton from '../../utility/TooltipButton';
 import { PrintButton } from '../../utility/PrintButton';
 import { MembershipListReport } from '../../../Reports/membershipListRpt';
 import { Icon } from '../../utility/Icon';
+// import { Loading } from '../../utility/Icon';
 
 import { Panel } from '../../utility/AJNPanel';
 
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('components/views/members/membersList');
 //┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 //┃   UIState                                                ┃
@@ -22,83 +22,88 @@ const uiModel = {
   sortProp: 'sortName',
   editMode: false,
   modalOpen: false,
+  newMember: false,
   currentMemberId: null,
-};
-
-const showResults = (values) => {
-  logit('showResults', values);
-  new Promise((resolve) => {
-    setTimeout(() => {
-      // simulate server latency
-      window.alert(`You submitted:\n\n${JSON.stringify(values, null, 2)}`);
-      resolve();
-    }, 500);
-  });
 };
 
 const Memberslist = (props) => {
   //       👇  map the state from the store
   const allList = useStoreState((s) => s.members.sorted);
-  const currentMember = useStoreState((s) => s.members.current.data);
+  // const currentMember = useStoreState((s) => s.members.current.data);
+  const currentMemberId = useStoreState((s) => s.members.current.memberId);
   const showAll = useStoreState((s) => s.members.showAll);
   const sortBy = useStoreState((s) => s.members.sortBy);
   const memberIndex = useStoreState((s) => s.members.index);
   const syncToIndex = useStoreState((s) => s.members.syncToIndex);
+  const { dispStart, dispLength, editMode } = useStoreState((s) => s.members);
 
-  logit('state', allList, currentMember, memberIndex, syncToIndex);
+  logit('state', allList, currentMemberId, memberIndex, syncToIndex);
 
   //       👇  map actions from the store
   const setShowAll = useStoreActions((a) => a.members.setShowAll);
   const setSortBy = useStoreActions((a) => a.members.setSortBy);
+  const setDispStart = useStoreActions((a) => a.members.setDispStart);
   const setCurrentId = useStoreActions((a) => a.members.setCurrentId);
   const createNewMember = useStoreActions((a) => a.members.createNewMember);
-  const updateMember = useStoreActions((a) => a.members.updateMember);
-  const [ui, setUi] = useState(uiModel);
-  const setDispStart = (dispStart) => setUi({ ...ui, dispStart });
+  // const updateMember = useStoreActions((a) => a.members.updateMember);
+  let i = allList?.findIndex((mem) => mem?.memberId === currentMemberId);
+  logit('sync index', i, currentMemberId, allList);
+  i = i > uiModel.dispLength - 1 ? Math.max(i - 11, 0) : i;
+
+  // const [ui, setUi] = useImmer(uiModel);
+  // const setDispStart = (dispStart) => setUi({ ...ui, dispStart });
+  // useEffect(() => {
+  //   setUi((draft) => {
+  //     draft.startDisp = i;
+  //   });
+  // }, [setUi]);
+  // useEffect(() => {
+  //   if (!currentMemberId) return 0;
+  //   let i = allList?.findIndex((mem) => mem?.memberId === currentMemberId);
+  //   logit('sync index', i, currentMemberId, allList);
+  //   if (i < ui.dispStart || i > ui.dispStart + ui.dispLength - 1) {
+  //     i = Math.max(i - 11, 0); // postion in middle of page
+  //     setUi({ ...ui, dispStart: i });
+  //   }
+  // }, [currentMemberId, allList, ui, setUi]);
 
   // setDispStart(syncToIndex(ui));
 
   function setSortProp(prop) {
     setSortBy(prop);
-    setUi((draft) => {
-      draft.sortProp = prop;
-    });
+    // setUi({ ...ui, sortProp: prop });
   }
-  function setEditMode(mode) {
-    setUi((draft) => {
-      draft.editMode = mode;
-    });
-  }
+  // function setEditMode(editMode) {
+  //   setUi({ ...ui, editMode });
+  // }
 
-  const saveEdit = (memData) => {
-    logit('saveEdit', currentMember, memData);
+  // const saveEdit = (memData) => {
+  //   logit('saveEdit', currentMemberId, memData);
 
-    updateMember(memData);
-  };
+  //   updateMember(memData);
+  // };
 
-  const deleteMember = () => {
-    const { memberId, accountId, fullName } = currentMember;
-    logit('deleteMember', memberId, accountId.accountId, fullName);
-    setCurrentId(undefined);
-    setEditMode(false);
-  };
-  const closeEdit = () => {
-    setEditMode(false);
-    if (!currentMember.newMember) return;
-    // MS.deleteCurrentMember();
-    setCurrentId(undefined);
-  };
-  const editFunctions = { saveEdit, deleteMember, closeEdit };
+  // const deleteMember = (currentMember) => {
+  //   const { memberId, accountId, fullName } = currentMember;
+  //   logit('deleteMember', memberId, accountId.accountId, fullName);
+  //   // MS.deleteCurrentMember();
+  //   setCurrentId(undefined);
+  //   setEditMode(false);
+  // };
+  // const closeEdit = (isNew) => {
+  //   setEditMode(false);
+  //   if (isNew) setCurrentId(undefined);
+  // };
+  // const editFunctions = { deleteMember, closeEdit };
 
   const changeCurrentMember = (memId, dispStart) => {
     logit('changeCurrentMember', memId);
     setDispStart(dispStart);
     setCurrentId(memId);
   };
-  logit('props', props);
-  var { membersAdmin } = props;
+  logit('props', { props, dispStart, dispLength });
 
-  var list = allList.slice(ui.dispStart, ui.dispStart + ui.dispLength);
+  var list = allList.slice(dispStart, dispStart + dispLength);
 
   var Members = (props) => {
     return (
@@ -110,14 +115,14 @@ const Memberslist = (props) => {
           let clss = classnames(
             'list-line',
             member.memberStatus,
-            { current: currentMember?.memberId === member.memberId },
+            { current: currentMemberId === member.memberId },
             member.suspended ? 'suspended' : subsStatus,
           );
           return (
             <div
               key={member.memberId}
               className={clss}
-              onClick={() => changeCurrentMember(member.memberId, ui.dispStart)}
+              onClick={() => changeCurrentMember(member.memberId, dispStart)}
             >
               <span className='line-name'>
                 <span className='id'>{member.memberId.substr(1)}</span>
@@ -139,8 +144,8 @@ const Memberslist = (props) => {
         {memberIndex.key.map(([disp, key, start], i, idx) => {
           let value = start;
           let end = i < idx.length - 1 ? idx[i + 1][2] - 1 : allList.length - 1;
-          let seeStart = start >= ui.dispStart && start < ui.dispStart + ui.dispLength;
-          let seeEnd = end >= ui.dispStart && end < ui.dispStart + ui.dispLength;
+          let seeStart = start >= dispStart && start < dispStart + dispLength;
+          let seeEnd = end >= dispStart && end < dispStart + dispLength;
           let partVisible = seeStart || seeEnd;
           let allVisible = seeStart && seeEnd;
           let cl = classnames({ indexItem: true, partVisible, allVisible });
@@ -158,18 +163,16 @@ const Memberslist = (props) => {
     );
   };
   const pageDown = () => {
-    setDispStart(
-      Math.min(ui.dispStart + ui.dispLength, allList.length - 0.5 * ui.dispLength),
-    );
+    setDispStart(Math.min(dispStart + dispLength, allList.length - 0.5 * dispLength));
   };
   const pageUp = () => {
-    setDispStart(Math.max(ui.dispStart - ui.dispLength, 0));
+    setDispStart(Math.max(dispStart - dispLength, 0));
   };
   var title = <h4>Membership Lists</h4>;
   logit('renderPage');
   return (
     <Panel header={title} className='member-list' id='steds_memberlist'>
-      <div className='sort-buttons' hidden={ui.editMode}>
+      <div className='sort-buttons' hidden={editMode}>
         <TooltipButton
           key='name'
           className={sortBy === 'sortName' ? 'active' : ''}
@@ -180,9 +183,9 @@ const Memberslist = (props) => {
         </TooltipButton>
         <TooltipButton
           key='number'
-          className={sortBy === 'memberId' ? 'active' : ''}
-          onClick={() => setSortProp('memberId')}
-          visible={sortBy !== 'memberId'}
+          className={sortBy === 'memNo' ? 'active' : ''}
+          onClick={() => setSortProp('memNo')}
+          visible={sortBy !== 'memNo'}
         >
           sort by Number
         </TooltipButton>
@@ -195,7 +198,7 @@ const Memberslist = (props) => {
           {showAll ? 'Hide Old' : 'Show Old'}
         </TooltipButton>
       </div>
-      <div className='index' hidden={ui.editMode}>
+      <div className='index' hidden={editMode}>
         <div>
           <Icon name='page_up' onClick={pageUp} />
         </div>
@@ -204,19 +207,15 @@ const Memberslist = (props) => {
           <Icon name='page_down' onClick={pageDown} />
         </div>
       </div>
-      <div className='names' hidden={ui.editMode}>
+      <div className='names' hidden={editMode}>
         <Members />
       </div>
-      <EditMemberData
-        key={currentMember?.memberId}
-        className='details'
-        {...{ ...editFunctions, membersAdmin, ui }}
-        onSubmit={showResults}
-        onRequestHide={() => setEditMode(false)}
-        style={{ minHeight: '100%' }}
-      />
 
-      <span className='action-buttons' hidden={ui.editMode}>
+      {/* <Suspense fallback={<Loading />}> */}
+      <EditMemberData />
+      {/* </Suspense> */}
+
+      <span className='action-buttons' hidden={editMode}>
         {/* <PrintButton  onClick={()=>summaryReport(printFull)} overlay={printFull ? 'F' : 'W'} onContextMenu={togglePrint} tiptext="Print All  Walks PDF" visible/> */}
         <PrintButton
           // onClick={() => membershipListReport(allList)}
@@ -239,4 +238,9 @@ const Memberslist = (props) => {
   );
 };
 
-export default Memberslist;
+// export const Loading = () => (
+//   <span style={{ gridArea: 'booked', margin: 'auto' }}>
+//     <Icon name='spinner' style={{ width: '10em', height: '10em' }} />
+//   </span>
+// );
+export default React.memo(Memberslist);

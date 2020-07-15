@@ -1,12 +1,15 @@
 import React, { useEffect, useState, memo } from 'react';
-import Logit from 'logit';
+import Logit from '../logit';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-import { fetchData } from '../EasyPeasy/use-data-api';
-import { preparePayments } from '../EasyPeasy/model/displayLog2';
-import { dispDate } from '../EasyPeasy/dateFns';
+import { fetchData } from '../store/use-data-api';
+import { preparePayments } from '../store/model/displayLog2';
+import { dispDate } from '../store/dateFns';
+import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the CSS
+
 import _ from 'lodash';
 
-import { Icon } from './Icon';
+import { Icon } from '../Components/utility/Icon';
+// import { Icon } from '../Components/utility/Icon';
 var logit = Logit('Reports/CreditOwedRpt');
 const styleSpread = {
   display: 'flex',

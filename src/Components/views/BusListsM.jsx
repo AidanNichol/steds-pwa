@@ -1,41 +1,52 @@
 /* jshint quotmark: false, jquery: true */
-import React, { useState, useEffect } from 'react';
+import React, { useState, Fragment, Suspense } from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import styled from 'styled-components';
+import { Loading } from '../utility/Icon';
 import { PrintButton } from '../utility/PrintButton';
 import { SummaryReport } from '../../Reports/summaryReport';
-import { fetchData } from '../../EasyPeasy/use-data-api';
+import { useFetchData } from '../../store/use-data-api';
+// import { fetchData } from '../../store/use-data-api';
 
 import SelectWalk from '../utility/SelectWalk';
 
 import { Panel } from '../utility/AJNPanel';
 
-import Logit from 'logit';
+import Logit from '../../logit';
 var logit = Logit('components/views/busListsM');
 
 export const BusLists = function BusLists(props) {
-  // const storeX = useStore();
-  // logit('storeX', storeX);
-  // var { store } = props;
-  // logit('props', props);
-  // const bookableWalks = usBookableWalks();
   const bookingStatus = useStoreState((s) => s.walkBookingStatus.status);
-  const index = useStoreState((s) => s.names);
-  const setPage = useStoreActions((a) => a.router.setPage);
-  const setAccount = useStoreActions((a) => a.accountStatus.setAccount);
   logit('bookingStatus', bookingStatus);
   const [currentWalk, setCurrentWalk] = useState(bookingStatus[0]);
   logit('currentWalk', currentWalk);
-  const [bookings, setbookings] = useState([]);
-  useEffect(() => {
-    const getIt = async () => {
-      const res = await fetchData('Booking/buslist/walkId/' + currentWalk.walkId);
-      logit('fetchData returned', res);
-      setbookings(res.data);
-    };
-    getIt();
-  }, [currentWalk.walkId]);
-  if (!bookings) return null;
+
+  var title = <h4>Bus List</h4>;
+  return (
+    <Panel header={title} className='bus-list'>
+      <SelectWalk {...{ walks: bookingStatus, setCurrentWalk, currentWalk }} />
+      <div className='buttons'>
+        <PrintButton
+          rcomp={SummaryReport}
+          rtitle='St.Eds - Bus Summary'
+          tiptext='Print Bus Lists'
+          visible
+        />
+      </div>
+      {/* <Suspense fallback='...loading...'> */}
+      <Suspense fallback={<Loading style={{ gridArea: 'booked' }} />}>
+        <BusList {...{ currentWalk }} />
+      </Suspense>
+    </Panel>
+  );
+};
+const BusList = ({ currentWalk }) => {
+  const index = useStoreState((s) => s.names);
+  const setPage = useStoreActions((a) => a.router.setPage);
+  const setAccount = useStoreActions((a) => a.accountStatus.setAccount);
+
+  const bookings = useFetchData('Booking/buslist/walkId/' + currentWalk.walkId).data;
+  logit('useFetchData', bookings);
   const byNameR = (a, b) => a.Member.sortName.localeCompare(b.Member.sortName);
   const parseData = (data) => {
     const res = [[], [], []];
@@ -61,105 +72,101 @@ export const BusLists = function BusLists(props) {
   extractAnnotations(waitingList);
   logit('extract Annotations', annotations, busBookings, waitingList);
   busBookings.sort(byNameR);
-  logit('preStatus', currentWalk, bookingStatus);
+  logit('preStatus', currentWalk);
   //     bookingsAdmin: store.signin.isBookingsAdmin,
-  const showMemberBookings = (memberId) => {
+  const showBookings = (memberId) => {
     setPage('bookings');
     setAccount(index.get(memberId).accountId);
   };
-
-  const Cars = (props) => {
-    return props.cars.length === 0 ? null : (
-      <section className='booked-cars'>
-        <h4>Cars</h4>
-        {props.cars.map((bkng) => (
-          <div
-            className='member'
-            key={'C' + bkng.memberId}
-            onClick={() => showMemberBookings(bkng.memberId)}
-          >
-            <div className='bName'>
-              {bkng.Member.sortName}
-              <Notes {...{ bkng }} />
-            </div>
-          </div>
-        ))}
-      </section>
-    );
-  };
-  const Waitlist = (props) =>
-    props.list.length === 0 ? null : (
-      <div className='waiting-list'>
-        <h4>Waiting List</h4>
-
-        {props.list.map((bkng) => {
-          return (
-            <div
-              key={'W' + bkng.memberId}
-              className='member'
-              onClick={() => showMemberBookings(bkng.memberId)}
-            >
-              <div className='wName'>
-                <span className='pos'>{pos++}. </span>
-                {bkng.Member.sortName}
-                <Notes {...{ bkng }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    );
-  const ShowAnnotations = ({ annotations }) => {
-    return (
-      <AnnoBlock>
-        {annotations.map((a, i) => {
-          return (
-            <AnnoLine key={i}>
-              <Annotation style={{ left: -10 }}>{i + 1}</Annotation>
-              <div>{a}</div>
-            </AnnoLine>
-          );
-        })}
-      </AnnoBlock>
-    );
-  };
-
-  var title = <h4>Bus List</h4>;
-  var pos = 1;
   const free = currentWalk.capacity - currentWalk.booked;
-  return (
-    <Panel header={title} className='bus-list'>
-      <SelectWalk {...{ walks: bookingStatus, setCurrentWalk, currentWalk }} />
-      <div className='buttons'>
-        <PrintButton
-          rcomp={SummaryReport}
-          rtitle='St.Eds - Bus Summary'
-          tiptext='Print Bus Lists'
-          visible
-        />
-      </div>
 
-      <div className='booked-members'>
-        {busBookings.map((bkng) => (
-          <div className='member' key={'B' + bkng.memberId}>
-            <div className='bName' onClick={() => showMemberBookings(bkng.memberId)}>
-              {bkng.Member.sortName}
-              <Notes {...{ bkng }} />
-            </div>
-          </div>
-        ))}
-        <div className='seats-available'>
-          Seats available <div>{free} </div>
-        </div>
-      </div>
+  return (
+    <Fragment>
+      <Bus {...{ busBookings, showBookings, free }} />
+
       <Others>
         <ShowAnnotations {...{ annotations }} />
         <div className='others'>
-          <Waitlist list={waitingList} />
-          <Cars cars={carBookings} />
+          <Waitlist list={waitingList} {...{ showBookings }} />
+          <Cars cars={carBookings} {...{ showBookings }} />
         </div>
       </Others>
-    </Panel>
+    </Fragment>
+  );
+};
+const Bus = ({ busBookings, showBookings, free }) => {
+  return (
+    <div className='booked-members'>
+      {busBookings.map((bkng) => (
+        <div className='member' key={'B' + bkng.memberId}>
+          <div className='bName' onClick={() => showBookings(bkng.memberId)}>
+            {bkng.Member.sortName}
+            <Notes {...{ bkng }} />
+          </div>
+        </div>
+      ))}
+      <div className='seats-available'>
+        Seats available <div>{free}</div>
+      </div>
+    </div>
+  );
+};
+const Cars = (props) => {
+  return props.cars.length === 0 ? null : (
+    <section className='booked-cars'>
+      <h4>Cars</h4>
+      {props.cars.map((bkng) => (
+        <div
+          className='member'
+          key={'C' + bkng.memberId}
+          onClick={() => props.showBookings(bkng.memberId)}
+        >
+          <div className='bName'>
+            {bkng.Member.sortName}
+            <Notes {...{ bkng }} />
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+};
+const Waitlist = (props) => {
+  if (props.list.length === 0) return null;
+  var pos = 1;
+  return (
+    <div className='waiting-list'>
+      <h4>Waiting List</h4>
+
+      {props.list.map((bkng) => {
+        return (
+          <div
+            key={'W' + bkng.memberId}
+            className='member'
+            onClick={() => props.showBookings(bkng.memberId)}
+          >
+            <div className='wName'>
+              <span className='pos'>{pos++}.</span>
+              {bkng.Member.sortName}
+              <Notes {...{ bkng }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+const ShowAnnotations = ({ annotations }) => {
+  return (
+    <AnnoBlock>
+      {annotations.map((a, i) => {
+        return (
+          <AnnoLine key={i}>
+            <Annotation style={{ left: -10 }}>{i + 1}</Annotation>
+            <div>{a}</div>
+          </AnnoLine>
+        );
+      })}
+    </AnnoBlock>
   );
 };
 const AnnoBlock = styled.div``;

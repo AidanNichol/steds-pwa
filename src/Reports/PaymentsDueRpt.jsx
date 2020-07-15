@@ -1,7 +1,7 @@
 import React, { useEffect, memo } from 'react';
-import { Icon } from './Icon';
+import { Icon } from '../Components/utility/Icon';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-import Logit from 'logit';
+import Logit from '../logit';
 var logit = Logit('Reports/PaymentsDueRpt');
 
 const MembersInvoice = ({ account }) => {
@@ -40,7 +40,9 @@ const Detail = ({ bkng }) => {
   return (
     <div key={bkng.bookingId} style={{ paddingLeft: 5 }}>
       {bkng.displayDate}
-      <Icon type={bkng.status} style={style.icon} />
+      <span style={style.icon}>
+        <Icon type={bkng.status} />
+      </span>
       <span className='text'>
         {bkng.venue}
         {bkng.name}

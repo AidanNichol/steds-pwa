@@ -8,8 +8,9 @@ import { CreditsOwedRpt } from './CreditsOwedRpt';
 // import { creditsOwedReport } from './creditsReport2';
 import { WalkDayBookingSheet } from './WalkDayBookingSheet';
 import { format } from 'date-fns';
+import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the CSS
 
-import Logit from 'logit';
+import Logit from '../logit';
 var logit = Logit('Reports/summaryReport');
 const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm');
 
@@ -22,10 +23,15 @@ const Page = (props) => {
     breakBefore: 'page',
   };
   return (
-    <div style={{ ...style, ...props.style }}>
-      <Banner title={props.title} />
-      {props.children}
-    </div>
+    <html>
+      <head></head>
+      <body>
+        <div style={{ ...style, ...props.style }}>
+          <Banner title={props.title} />
+          {props.children}
+        </div>
+      </body>
+    </html>
   );
 };
 const Document = (props) => {

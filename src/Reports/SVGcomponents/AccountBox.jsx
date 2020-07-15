@@ -2,8 +2,8 @@ import React from 'react';
 import { MoneyBox } from './MoneyBox';
 import { AccountHeader } from './AccountHeader';
 import { MemberSumm } from './MemberSumm';
-import Logit from 'logit';
-const logit = Logit('/Reports/SVGcomponents/AccountBox');
+import Logit from '../../logit';
+const logit = Logit('Reports/SVGcomponents/AccountBox');
 
 export const AccountBox = ({ account }) => {
   const { sortName, codes, balance, Members } = account;

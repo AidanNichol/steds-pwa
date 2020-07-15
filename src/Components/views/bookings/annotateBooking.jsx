@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStoreActions, useStoreState } from 'easy-peasy';
 import TextInput from 'react-textarea-autosize';
 
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('components/views/bookings/annotateBooking');
 
 export function AnnotateBooking(props) {

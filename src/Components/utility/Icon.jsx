@@ -1,54 +1,60 @@
 import React from 'react';
+import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 const X = [
-  { icon: 'slash', color: 'white', transform: 'up-2' },
-  { icon: 'slash', color: 'red' },
+  { icon: ['fas', 'slash'], color: 'white', transform: 'up-2' },
+  { icon: ['fas', 'slash'], color: 'red' },
 ];
 const afIcons = {
-  B: { icon: 'bus', color: 'green' },
-  C: { icon: 'car', color: 'blue' },
-  W: { icon: ['far', 'clock'] },
+  B: { icon: ['fad', 'bus'], color: 'green' },
+  C: { icon: ['fad', 'car-side'], color: 'blue' },
+  W: { icon: ['fad', 'clock'] },
   T: { icon: ['ajn', 'treasurer'] },
   P: { icon: 'pound-sign', transform: 'grow-3 right-2' },
   // '+': {icon:['ajn', 'credit']},
-  BL: [{ icon: 'bus', color: 'red' }, ...X],
+  BL: [{ icon: ['fad', 'bus'], color: 'red' }, ...X],
   '+': [
-    { icon: 'hand-holding', transform: ' down-1' },
-    { icon: 'pound-sign', transform: 'shrink-6 up-3' },
+    { icon: ['ajn', 'credit'] },
+    // { icon: 'hand-holding', transform: ' down-1' },
+    // { icon: 'pound-sign', transform: 'shrink-6 up-3' },
   ],
-  A: { icon: 'edit' },
+  A: { icon: ['fad', 'edit'] },
   Bank: [
-    { icon: ['far', 'sack'] },
+    { icon: ['fad', 'sack'] },
     { icon: 'pound-sign', color: 'green', transform: 'shrink-8 down-2' },
   ],
   Blank: { icon: ['far', 'circle'], color: 'blue' },
   Cancel: { icon: 'times' },
-  Printer: { icon: ['far', 'print'] },
-  page_up: { icon: 'arrow-alt-up' },
-  page_down: { icon: 'arrow-alt-down' },
+  Printer: { icon: ['fad', 'print'] },
+  spinner: { icon: ['fad', 'spinner'], color: 'blue', className: 'fa-spin' },
+  spinner_third: { icon: ['fad', 'spinner-third'], className: 'fa-spin' },
+  info_square: { icon: ['far', 'info-square'] },
+  long_arrow_down: { icon: ['far', 'long-arrow-down'] },
+  page_up: { icon: ['fad', 'arrow-alt-up'] },
+  page_down: { icon: ['fad', 'arrow-alt-down'] },
   user_add: [
-    { icon: 'user' },
+    { icon: ['fad', 'user'] },
     { icon: 'plus', color: 'green', transform: 'shrink-8 up-5 right-7' },
   ],
   user_enable: [
-    { icon: 'user', color: 'orange' },
+    { icon: ['fad', 'user'], color: 'orange' },
     { icon: 'check', color: 'green', transform: 'shrink-8 up-5 right-7' },
   ],
   user_disable: [
-    { icon: 'user', color: 'green' },
+    { icon: ['fad', 'user'], color: 'green' },
     { icon: 'ban', color: 'red', transform: 'shrink-8 up-5 right-7' },
   ],
   user_delete: [
-    { icon: 'user', color: 'orange' },
+    { icon: ['fad', 'user'], color: 'orange' },
     { icon: 'times', color: 'red', transform: 'grow-1' },
   ],
   user_undelete: [
-    { icon: 'user', color: 'red' },
+    { icon: ['fad', 'user'], color: 'red' },
     { icon: 'check', color: 'green', transform: 'grow-1' },
   ],
   Delete_Member: [
-    { icon: 'user', color: 'red' },
+    { icon: ['fad', 'user'], color: 'red' },
     { icon: 'times', transform: 'grow-1' },
   ],
 };
@@ -57,14 +63,18 @@ afIcons['+X'] = [...afIcons['+'], ...X];
 
 console.log('fa Icons', afIcons);
 // import logo from '../../../public/icon-B.svg';
-export const Icon = ({ type, name, className, size, ...rest }) => {
+export const Icon = ({ type, name, className: cls, size, ...rest }) => {
   if (!name && type) name = type;
   if (!name) return null;
+
   if (afIcons[name]) {
-    if (!afIcons[name].length)
-      return <FontAwesomeIcon {...{ ...afIcons[name], size, className, ...rest }} />;
+    if (!afIcons[name].length) {
+      let { className = '', ...afIcon } = afIcons[name];
+      className = className + ' ' + cls;
+      return <FontAwesomeIcon {...{ ...afIcon, size, className, ...rest }} />;
+    }
     return (
-      <span className={'fa-layers fa-fw ' + className} {...rest}>
+      <span className={'fa-layers fa-fw ' + cls} {...rest}>
         {afIcons[name].map((ics, i) => (
           <FontAwesomeIcon {...{ ...ics, size }} key={i} />
         ))}
@@ -75,3 +85,16 @@ export const Icon = ({ type, name, className, size, ...rest }) => {
   console.log('Icon2', name, type);
   return null;
 };
+const Centered = styled.span`
+  justify-self: center;
+  align-self: center;
+  margin: auto;
+`;
+export const Loading = ({ styleI, ...rest }) => (
+  <Centered {...rest}>
+    <Icon
+      name='spinner'
+      style={{ width: '5em', height: '5em', ...styleI, color: '#877031' }}
+    />
+  </Centered>
+);

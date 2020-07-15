@@ -1,7 +1,7 @@
 import React, { useEffect, useState, memo } from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-const Logit = require('logit');
-const logit = Logit('easyPeasy/login');
+const Logit = require('../../logit');
+const logit = Logit('store/login');
 
 //---------------------------------------------------------------------
 //          Component
@@ -18,10 +18,18 @@ export const Login = () => {
     logit('loading user');
     load();
   }, [load]);
-  const handleInputChange = (event) => {
-    const target = event.target;
-    setState({ ...state, error: '', [target.name]: target.value });
+  useEffect(() => {
+    logit('state Changed', state);
+  }, [state]);
+  // const handleInputChange = (event) => {
+  //   const target = event.target;
+  const nameChanged = (value) => {
+    setState({ ...state, error: '', username: value });
   };
+  const passChanged = (value) => {
+    setState({ ...state, error: '', password: value });
+  };
+  // };
   const detectEnter = (event) => {
     if ((event.keyCode || event.which) === 13) {
       logMeIn();
@@ -44,7 +52,7 @@ export const Login = () => {
   };
 
   const loggedIn = (
-    <div className='right'>
+    <div style={{ textAlign: 'right' }}>
       Logged in: {user.username} ({(user.roles || []).join(', ')})
       <button onClick={logout}>Sign Out</button>
     </div>
@@ -62,7 +70,7 @@ export const Login = () => {
                 type='text'
                 value={state.name}
                 onKeyDown={detectEnter}
-                onChange={handleInputChange}
+                onChange={({ target }) => nameChanged(target.value)}
                 onFocus={state.resetUser}
               />
             </td>
@@ -73,7 +81,7 @@ export const Login = () => {
                 type='password'
                 value={state.password}
                 onKeyDown={detectEnter}
-                onChange={handleInputChange}
+                onChange={({ target }) => passChanged(target.value)}
               />
             </td>
             <td>

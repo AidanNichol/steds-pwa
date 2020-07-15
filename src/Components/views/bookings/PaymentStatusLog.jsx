@@ -3,15 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { cold } from 'react-hot-loader';
 import { Icon } from '../../utility/Icon';
 import classnames from 'classnames';
-import { dispDate, today, adjustMonths } from '../../../EasyPeasy/dateFns';
+import { dispDate, today, adjustMonths } from '../../../store/dateFns';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-import longArrowDown from '../../../images/long-arrow-down.svg';
 
 // import classNames from 'classnames';
 import styled from 'styled-components';
 import '../../../styles/logsTable.scss';
 
-import Logit from 'logit';
+import Logit from '../../../logit';
 import { sprintf } from 'sprintf-js';
 var logit = Logit('components/views/bookings/PaymentStatusLog');
 
@@ -103,7 +102,7 @@ const TheTable = function TheTable(props) {
   logit('TheTable', { logs, rest, props, lastBanking });
   const logMoved = (log) =>
     log.moved ? (
-      <img src={longArrowDown} style={{ width: 12, paddingRight: 2 }} alt='' />
+      <Icon name='long_arrow_down' width='12' style={{ paddingRight: 2 }} alt='' />
     ) : null;
   const logClasses = (log) => {
     const { ruleAfter, historic, balance } = log;
@@ -164,9 +163,9 @@ const TheTable = function TheTable(props) {
               )}
               <Balance className={log.balance < 0 ? 'debt' : ''}>
                 {log.balance !== 0 ? `£${log.balance}` : ''}
-                {/* {log.dat > lastBanking ? (
+                {log.dat > lastBanking ? (
                   <EditButton {...{ resetLate, log, ...rest }} />
-                ) : null} */}
+                ) : null}
               </Balance>
             </LogRec>
           );
@@ -211,11 +210,8 @@ function ChangeLogR(props) {
     setEndDate(newDate);
   };
 
-  let _logtable = null;
   const balance = logs.filter((l) => l?.balance !== 0).reduce((t, l) => t + l.balance, 0);
-  const requestPrint = () => {
-    logit('requestPrint', _logtable);
-  };
+
   return (
     <Table className={'logsTableX ' + (props.className || '')}>
       <div className='logHeader'>
@@ -248,9 +244,9 @@ function ChangeLogR(props) {
         {/* <span onClick={toggleShowAll} className='showAll screenOnly'>
           {showAll ? '🔽' : '▶️️'}
         </span> */}
-        <span onClick={requestPrint} className='showAll print screenOnly'>
+        {/* <span onClick={requestPrint} className='showAll print screenOnly'>
           🖨
-        </span>
+        </span> */}
       </div>
       <TheTable {...{ balance, logs, index, lastBanking, bookingChange }} />
     </Table>

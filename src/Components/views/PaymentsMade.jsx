@@ -1,21 +1,20 @@
 /* jshint quotmark: false */
-import React, { useState } from 'react';
-import { useStoreState, useStoreActions } from 'easy-peasy';
-import { Panel } from '../utility/AJNPanel';
-// import MyModal from '../utility/AJNModal'
-import TooltipButton from '../utility/TooltipButton';
-import classnames from 'classnames';
-import { PaymentsSummaryReport } from '../../Reports/PaymentsSummaryReport';
-import { PrintButton } from '../utility/PrintButton';
-// import TooltipContent from '../utility/TooltipContent';
-// import PaymentsSummary from './PaymentsSummary'
-// import showNewWindow from 'utilities/showNewWindow';
-import styled from 'styled-components';
-import { Icon } from '../utility/Icon';
-import { dispDate } from '../../EasyPeasy/dateFns';
+import React, { useState } from "react";
+import { useStoreState, useStoreActions } from "easy-peasy";
+import { Panel } from "../utility/AJNPanel";
+import TooltipButton from "../utility/TooltipButton";
+import classnames from "classnames";
+import { PaymentsSummaryReport } from "../../Reports/PaymentsSummaryReport";
+import { PrintButton } from "../utility/PrintButton";
+import styled from "styled-components";
+import { Icon } from "../utility/Icon";
+import { dispDate } from "../../store/dateFns";
+// import Notes20 from '../../images/poundSterling.jpg';
+import Notes20 from "../../images/pound-banknote_1f4b7.png";
+// import Notes20 from '../../images/banknote-with-pound-sign_1f4b7.png';
 
-import Logit from 'logit';
-var logit = Logit('components/views/PaymentsReceived');
+import Logit from "../../logit";
+var logit = Logit("components/views/PaymentsReceived");
 
 const detail = ({ booking, className }) => {
   const cls = classnames({
@@ -23,7 +22,7 @@ const detail = ({ booking, className }) => {
     [className]: true,
     newBkng: booking.activeThisPeriod && !(booking.paid && booking.paid.P > 0),
   });
-  logit('booking', booking);
+  logit("booking", booking);
   // const paid = [
   //   ['+', '₢'],
   //   ['T', '₸'],
@@ -38,12 +37,13 @@ const detail = ({ booking, className }) => {
   return (
     <div className={cls} key={booking.dat}>
       {booking.displayDate}
-      <Icon type={booking.status} width='16' />
-      <span className='text'>
+      <Icon type={booking.status} width="16" />
+      <span className="text">
         {booking.venue}
-        {booking.name}{' '}
+        {booking.name}
+        {" "}
       </span>
-      <span className='paid'>{booking.amount}</span>
+      <span className="paid">{booking.amount}</span>
     </div>
   );
 };
@@ -90,7 +90,7 @@ export const Detail = styled(detail)`
 `;
 const Payment = (props) => {
   const { payment } = props;
-  logit('payment', payment);
+  logit("payment", payment);
   return (
     <div>
       {/* <div>
@@ -99,7 +99,7 @@ const Payment = (props) => {
       </div> */}
       <>
         {payment.Bookings.map((booking) => (
-          <Detail booking={booking} key={booking.bookingId + 'xx'} />
+          <Detail booking={booking} key={booking.bookingId + "xx"} />
         ))}
       </>
     </div>
@@ -107,21 +107,30 @@ const Payment = (props) => {
 };
 const memberRecipt = (props) => {
   var { account, showMemberBookings } = props;
-  logit('memberRecipt props', account.sortName, account);
+  logit("memberRecipt props", account.sortName, account);
 
   return (
-    <div className={props.className + ' member-rcpt'}>
-      <div className='overview'>
-        <span className='who' onClick={() => showMemberBookings(account.members[0]._id)}>
-          {' '}
+    <div className={props.className + " member-rcpt"}>
+      <div className="overview">
+        <span
+          className="who"
+          onClick={() => showMemberBookings(account.members[0]._id)}
+        >
+          {" "}
           {account.sortName}
         </span>
-        {account.balance !== 0 ? (
-          <TooltipButton className='owed' label={`£${account.balance}`} visible />
-        ) : null}
+        {account.balance !== 0
+          ? (
+            <TooltipButton
+              className="owed"
+              label={`£${account.balance}`}
+              visible
+            />
+          )
+          : null}
       </div>
       {account.payments.map((payment) => (
-        <Payment payment={payment} key={payment.paymentId + 'xx'} />
+        <Payment payment={payment} key={payment.paymentId + "xx"} />
       ))}
     </div>
   );
@@ -134,6 +143,7 @@ export const MemberRecipt = styled(memberRecipt)`
   border: #bce8f1 thin solid;
   border-radius: 5px;
   flex: 0 0 auto;
+  width: 245px;
   /*max-width: 300px;*/
 
   span {
@@ -176,84 +186,104 @@ export const MemberRecipt = styled(memberRecipt)`
 const Payments = (props) => {
   var { className, store } = props;
   const paymentsMade = useStoreState((s) => s.payments.paymentsMade);
+  const totalPaymentsMade = useStoreState((s) => s.payments.totalPaid);
   const setDisplayDebts = useStoreActions((a) => a.payments.setDisplayDebts);
   const setPage = useStoreActions((a) => a.router.setPage);
   const banking = useStoreState((s) => s.banking.latestBanking);
-  const setReport = useStoreActions((a) => a.reports.setReport);
-  const [showAll, setShowAll] = useState(true);
-  const toggleShowAll = () => setShowAll(!showAll);
+  const bankMoney = useStoreActions((a) => a.banking.bankMoney);
 
-  logit('hooky stuff', paymentsMade, banking);
+  const [showBanking, setShowBanking] = useState(false);
+
+  logit("hooky stuff", paymentsMade, banking);
   // if (accounts.length === 0) return null;
   if (!banking) return null;
   const startDate = dispDate(banking.endDate);
 
-  logit('filtered accounts');
-  let totalPaymentsMade = 0;
-  paymentsMade.forEach((account) => {
-    account.payments.forEach((pymt) => {
-      totalPaymentsMade += pymt.amount;
-    });
-  });
+  logit("filtered accounts");
+  // let totalPaymentsMade = 0;
+  // paymentsMade.forEach((account) => {
+  //   account.payments.forEach((pymt) => {
+  //     totalPaymentsMade += pymt.amount;
+  //   });
+  // });
 
-  const bankMoney = banking.bankMoney;
-  logit('accs', paymentsMade);
+  logit("accs", paymentsMade);
   const showMemberBookings = (memId) => {
-    store.router.setPage({ page: 'bookings', memberId: memId });
-    store.router.setPage({ page: 'bookings', memberId: memId });
-    setPage('booking');
+    store.router.setPage({ page: "bookings", memberId: memId });
+    store.router.setPage({ page: "bookings", memberId: memId });
+    setPage("booking");
   };
 
   var title = (
     <h4>
       Payments Made &nbsp; &nbsp; — &nbsp; &nbsp; Total Payments Received
-      <span className='startDate' style={{ fontSize: '0.8em', fontStyle: 'italic' }}>
+      <span
+        className="startDate"
+        style={{ fontSize: "0.8em", fontStyle: "italic" }}
+      >
         (since {startDate})
       </span>
       : &nbsp; £{totalPaymentsMade}
     </h4>
   );
   return (
-    <Panel className={'paymentsMade ' + className} header={title}>
-      <div className='all-payments'>
-        <div className='buttons'>
+    <Panel className={"paymentsMade " + className} header={title}>
+      <div className="all-payments">
+        <div className="buttons">
           <TooltipButton
-            label='Show Payments Due'
+            label="Show Payments Due"
             onClick={() => setDisplayDebts()}
-            tiptext='Show Payments Due'
-            className='tab-select'
+            tiptext="Show Payments Due"
+            className="tab-select"
             visible
           />
-          <TooltipButton
-            label={showAll ? 'Only Payments' : 'All Changes'}
-            onClick={() => toggleShowAll()}
-            placement='bottom'
-            tiptext={showAll ? 'Only show new payments' : 'Show all changes this period'}
-            className='show-range'
-            visible
-          />
-          <PrintButton
-            placement='bottom'
-            rtitle='Payments Received'
-            rcomp={PaymentsSummaryReport}
-            rprops={{ banking, accounts: paymentsMade }}
-            tiptext='Print Summary Report'
-            visible
-          />
-          <TooltipButton
+          {/* <TooltipButton
             icon='Bank'
             placement='bottom'
             onClick={() => {
-              setReport(PaymentsSummaryReport, null, 'Payments Received');
+              // setReport(PaymentsSummaryReport, null, 'Payments Received');
               bankMoney(paymentsMade, totalPaymentsMade);
             }}
             tiptext='Bank the money and start new period'
+            visible={showBanking}
+          /> */}
+          <TooltipButton
+            placement="bottom"
+            onClick={() => {
+              // setReport(PaymentsSummaryReport, null, 'Payments Received');
+              bankMoney(paymentsMade, totalPaymentsMade);
+            }}
+            tiptext="Bank the money and start new period"
+            visible={showBanking}
+            style={{ maxHeight: 54, padding: "2px 5px" }}
+            img={Notes20}
+            iconStyle={{ width: "100%" }}
+          />
+          {/* <span
+              role='img'
+              aria-label='bank'
+              style={{ fontSize: '6em', lineHeight: '0.7em' }}
+              i
+            >
+              💷
+            </span>
+          </TooltipButton> */}
+          <PrintButton
+            placement="bottom"
+            rtitle="Payments Received"
+            rcomp={PaymentsSummaryReport}
+            rprops={{ banking, accounts: paymentsMade }}
+            tiptext="Print Summary Report"
+            onClick={() => setShowBanking(true)}
             visible
           />
         </div>
         {paymentsMade.map((account) => {
           return (
-            <MemberRecipt key={account.accountId} {...{ account, showMemberBookings }} />
+            <MemberRecipt
+              key={account.accountId}
+              {...{ account, showMemberBookings }}
+            />
           );
         })}
       </div>
@@ -311,6 +341,8 @@ export const PaymentsMade = styled(Payments)`
 
       .button {
         max-width: 75px;
+        min-width: 75px;
+        min-height: 70px;
         font-size: 0.85em;
       }
     }

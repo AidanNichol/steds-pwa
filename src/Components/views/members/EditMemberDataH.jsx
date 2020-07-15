@@ -1,11 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import AccountMembers from './AccountMembers';
 import Select from 'react-select';
+import { usePaginatedBookingQuery } from '../../../store/use-data-api';
+import { queryCache } from 'react-query';
+import { Loading } from '../../utility/Icon';
+// import useFetch from 'fetch-suspense';
 
 import SuspendButtons from './SuspendButtons';
 import classnames from 'classnames';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import TextInput from 'react-textarea-autosize';
 import _ from 'lodash';
@@ -17,38 +21,35 @@ import {
   properCaseName,
   properCaseAddress,
   normalizePhone,
+  normalizeMobile,
 } from '../../utility/normalizersH';
 
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('components/views/members/EditMemberData');
-const toJS = (data) => JSON.parse(JSON.stringify(data));
 
 const memOpts = { Member: 'Member', Guest: 'Guest', HLM: 'Honary Life Member' };
 
-export const EditMemberData = (props) => {
-  logit('props', props);
+export const EditMemberData = React.memo(() => {
+  const editMode = useStoreState((s) => s.members.editMode);
+  const setEditMode = useStoreActions((a) => a.members.setEditMode);
+
   const updateMember = useStoreActions((a) => a.members.updateMember);
-  const currentMember = useStoreState((s) => s.members.current.data);
-  const mem = currentMember || {};
-  const [state, setState] = useState({
-    dirty: false,
-    newMember: currentMember?.newMember,
-    editMode: currentMember?.newMember,
-    member: mem,
-    subsStatus: currentMember?.subsStatus,
-  });
-  const { register, getValues, setValue, formState, reset, control } = useForm({});
-  useEffect(() => {
-    logit('form dirty', formState.dirty);
-  }, [formState.dirty]);
+  // const currentMember = useStoreState((s) => s.members.current.data);
+  const setCurrentId = useStoreActions((a) => a.members.setCurrentId);
 
-  logit('snapshot', mem);
+  const memberId = useStoreState((s) => s.members.current.memberId);
+  const { register, getValues, setValue, formState, reset } = useForm({});
+  const meta = usePaginatedBookingQuery(memberId && ['Member/includeAccount/', memberId]);
+  logit('meta', meta);
+  const { resolvedData: member, isFetching, status } = meta || {};
 
-  logit('props&state', props, state);
+  if (!memberId) return null;
+  if (status === 'loading' && !member) return <Loading />;
 
   const saveChanges = () => {
     const values = getValues();
-    if (currentMember.newMember) updateMember(values);
+    logit('saveChanges', values, formState, member);
+    if (member.newMember) updateMember(values);
     const dirty = formState.dirtyFields;
 
     const changes = _.pick(values, Array.from(dirty.values()));
@@ -57,22 +58,23 @@ export const EditMemberData = (props) => {
     }
     updateMember(changes);
     setEditMode(false);
-    // props.saveEdit(state.member);
+    queryCache.setQueryData(['Member/includeAccount/', memberId], {
+      ...member,
+      ...values,
+    });
   };
   const closeEdit = () => {
     setEditMode(false);
-    props.closeEdit();
+    if (member.newMember) setCurrentId(undefined);
   };
   const deleteMember = () => {
     setEditMode(false);
-    props.deleteMember();
+    const { memberId, accountId, fullName } = member;
+    logit('deleteMember', memberId, accountId.accountId, fullName);
+    // MS.deleteCurrentMember();
+    setCurrentId(undefined);
   };
-  const setEditMode = (v) => {
-    setState({ ...state, editMode: v });
-  };
-  // const setDeletePending = (bool) => {
-  //   if (state.deletePending !== bool) setState({ ...state, deletePending: bool });
-  // };
+
   const getShowState = (subsStatus, deleteState) => {
     logit('getShowState In:', subsStatus, deleteState);
     let state = subsStatus === 'ok' ? '' : subsStatus?.toUpperCase()[0];
@@ -81,53 +83,33 @@ export const EditMemberData = (props) => {
     return state;
   };
 
-  let { membersAdmin } = props;
-  membersAdmin = true;
-  let editMember = state.member;
-  const editMode = state.editMode;
-  if (!state.member.memberId) {
-    logit('no member to edit', state);
-    return null;
-  }
-  const { firstName, lastName, subscription, memberStatus, suspended, subsStatus } =
-    toJS(editMember) || {};
+  let membersAdmin = true;
 
-  // const onChangeData = (name, v) => {
-  //   logit('onChangeData', name, v, state.member);
-  //   if (state.member[name] === v) return; // unchanged
-  //   const mem = { ...state.member, [name]: v };
-  //   setState({ ...state, member: mem, dirty: true });
-  //   if (['subscription', 'memberStatus', 'deleteState'].includes(name)) {
-  //     const subsStatus = mem.subsStatus;
-  //     const showState = getShowState(subsStatus.status, mem.deleteState);
-  //     setState(() => ({ ...state, subsStatus, showState }));
-  //     logit('onChangeData', name, v, mem, subsStatus, showState, state);
-  //   }
-  // };
+  const { fullName, subscription, memberStatus, suspended, subsStatus } = member || {};
 
-  var showMode = !editMode;
-
-  const { deletePending, newMember } = state;
+  const deletePending = member.deleteState;
+  const newMember = member.newMember;
   // if (subsStatus.status !== 'OK')
   var title = (
     <div style={{ width: '100%' }}>
-      {firstName}
-      {lastName}
+      {fullName}
+
       {formState.dirty ? '(changed)' : ''}
+      {isFetching && <Loading styleI={{ width: '1em', height: '1em' }} />}
       <span
         style={{
           float: 'right',
-          hidden: !(editMode && formState.dirty),
+          hidden: !editMode || formState.dirty,
           cursor: 'pointer',
         }}
         className='closeWindow'
         onClick={closeEdit}
       >
-        {showMode || formState.dirty ? '' : 'X'}
+        {!editMode || formState.dirty ? '' : 'X'}
       </span>
     </div>
   );
-  const showState = getShowState(subsStatus?.status, mem.deleteState);
+  const showState = getShowState(subsStatus?.status, member.deleteState);
 
   const delSettings =
     {
@@ -146,11 +128,9 @@ export const EditMemberData = (props) => {
     subsStatus?.status,
     memberStatus,
   ).toLowerCase();
-  logit('showState', state, showState, delSettings);
-  if (!editMember) return null;
+  logit('showState', memberId, showState, delSettings, subsStatus, member);
 
-  const input = (name, options) => {
-    const { onChange, required = false, ...rest } = options || {};
+  const Input = ({ name, required, onChange, ...rest }) => {
     return (
       <FormLineX className={name}>
         <label>{name}</label>
@@ -159,27 +139,19 @@ export const EditMemberData = (props) => {
           name={name}
           onChange={onChange}
           ref={register({ required })}
-          defaultValue={currentMember[name]}
+          defaultValue={member[name]}
           disabled={!editMode}
         />
       </FormLineX>
     );
   };
 
-  const select = (name, options, multiple = false) => {
-    // const { name, options, required, ...rest } = props;
-    let value = editMember[name] || '';
-    if (multiple) value = value.split(',');
+  const MemSelect = ({ name, options }) => {
+    let value = member[name] || '';
     return (
       <FormLineX className={name}>
         <label>{name}</label>
-        <select
-          // {...rest}
-          name={name}
-          ref={register}
-          defaultValue={value}
-          disabled={!editMode}
-        >
+        <select name={name} ref={register} defaultValue={value} disabled={!editMode}>
           {Object.entries(options || {}).map(([key, label]) => (
             <option value={key} key={key}>
               {label}
@@ -189,7 +161,7 @@ export const EditMemberData = (props) => {
       </FormLineX>
     );
   };
-  const textarea = (name, options) => {
+  const Textarea = ({ name, ...options }) => {
     // const {  onChange,required, ...rest } = options;
     // const onChange = (e, ...rest) => {
     //   logit('Textarea returned', e, rest);
@@ -202,14 +174,15 @@ export const EditMemberData = (props) => {
         <TextInput
           {...options}
           name={name}
-          inputRef={register}
-          defaultValue={editMember[name]}
+          ref={register}
+          defaultValue={member[name]}
           disabled={!editMode}
         />
       </FormLineX>
     );
   };
-  const pickRoles = () => {
+
+  const PickRoles3 = () => {
     const roleOptions = [
       { label: 'Committee', value: 'committee' },
       { label: 'Tester', value: 'tester' },
@@ -223,8 +196,7 @@ export const EditMemberData = (props) => {
       return _.filter(roleOptions, (opt) => _.includes(vals, opt.value));
     };
 
-    const roles = pickOpt(editMember.role);
-    logit('SelectRoles', roles);
+    const roles = pickOpt(member.roles);
 
     const customStyles = {
       control: (prov) => ({ ...prov, minWidth: 257 }),
@@ -235,55 +207,60 @@ export const EditMemberData = (props) => {
         return isDisabled || data.isDisabled ? { ...base, display: 'none' } : base;
       },
     };
+    const [values, setReactSelectValue] = React.useState({ selectedOption: roles });
+    React.useEffect(() => {
+      logit('selectedOptions', values);
+    }, [values]);
+    const handleMultiChange = (selectedOption) => {
+      logit('handleMultiChange', selectedOption);
+      setValue('roles', selectedOption);
+      setReactSelectValue({ selectedOption });
+    };
+
+    React.useEffect(() => {
+      register({ name: 'roles', type: 'custom' }); // custom register react-select
+    }, []);
 
     return (
       <FormLineX>
         <label>Roles</label>
-        <Controller
-          as={Select}
-          control={control}
-          isMulti
+        <Select
           name='roles'
+          value={values.selectedOption}
+          onChange={handleMultiChange}
+          isMulti
           styles={customStyles}
-          onChange={(selected) => {
-            logit('role selected', selected);
-            // React Select return object instead of value for selection
-            return selected[0];
-          }}
-          // onChange={(roles) => {
-          //   logit('SelectRoles changed', roles);
-          //   props.onChange({ target: { value: roles.map((r) => r.value).join(',') } });
-          // }}
           options={roleOptions}
           isClearable={false}
           isDisabled={!editMode}
           placeholder={!editMode ? 'No Roles' : 'Select...'}
           removeSelected
           backspaceRemovesValue={false}
-          defaultValue={roles}
         />
       </FormLineX>
     );
   };
 
   // logit('formState', formState, formState.dirty, formState.dirtyFields);
+  logit('showState@render', memberId, showState, delSettings, subsStatus, member);
 
   return (
     <Panel
       className={'show-member-details ' + (editMode ? 'editmode' : 'showMode')}
+      // header={isFetching ? title + 'fetching...' : title}
       header={title}
     >
       <FormContainer className={clss} {...delSettings}>
         <form className='form' disabled={!editMode}>
-          {input('lastName', { required: true, onChange: properCaseName })}
-          {input('firstName', { required: true, onChange: properCaseName })}
+          <Input name='lastName' required onChange={properCaseName} />
+          <Input name='firstName' required onChange={properCaseName} />
 
-          {textarea('address', { onChange: properCaseAddress })}
-          {input('phone', { onChange: normalizePhone })}
-          {input('email')}
-          {input('mobile')}
+          <Textarea name='address' onChange={properCaseAddress} />
+          <Input name='phone' onChange={normalizePhone} />
+          <Input name='email' />
+          <Input name='mobile' onChange={normalizeMobile} />
           <TwoCol hidden={['Guest', 'HLM'].includes(memberStatus)}>
-            {input('subscription', { className: subsStatus?.status })}
+            <Input name='subscription' className={subsStatus?.status} />
             <TooltipButton
               label={`Paid £${subsStatus?.fee} for ${subsStatus?.year}`}
               onClick={() => {
@@ -299,16 +276,16 @@ export const EditMemberData = (props) => {
             />
           </TwoCol>
 
-          {select('memberStatus', memOpts)}
-          {textarea('nextOfKin')}
-          {textarea('medical')}
+          <MemSelect name='memberStatus' options={memOpts} />
+          <Textarea name='nextOfKin' />
+          <Textarea name='medical' />
 
-          {pickRoles()}
-          {input('memberId', { disabled: true })}
+          <PickRoles3 />
+          <Input name='memberId' />
 
           <TwoCol>
-            {input('accountId', { disabled: !newMember })}
-            <AccountMembers member={editMember} {...{ newMember, editMode }} />
+            <Input name='accountId' disabled={!newMember} />
+            <AccountMembers member={member} {...{ newMember, editMode }} />
           </TwoCol>
         </form>
         {showState === 'X' ? (
@@ -319,7 +296,7 @@ export const EditMemberData = (props) => {
             className={membersAdmin ? 'edit-member ' : 'edit-member hidden'}
             label='Edit'
             onClick={() => setEditMode(true)}
-            visible={showMode && membersAdmin}
+            visible={!editMode && membersAdmin}
           />
           <TooltipButton
             label='Close'
@@ -346,7 +323,7 @@ export const EditMemberData = (props) => {
               setValue,
               // onChangeData,
               deleteMember,
-              deleteState: editMember.deleteState,
+              deleteState: member.deleteState,
             }}
           />
         </form>
@@ -354,7 +331,7 @@ export const EditMemberData = (props) => {
       </FormContainer>
     </Panel>
   );
-};
+});
 const TwoCol = styled.div`
   display: flex;
   flex-direction: row;

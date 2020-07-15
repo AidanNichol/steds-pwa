@@ -5,7 +5,7 @@ import { PaymentHelpDialog } from '../../help/PaymentHelpDialog';
 import TooltipButton from '../../utility/TooltipButton';
 import TooltipContent from '../../utility/TooltipContent';
 import styled from 'styled-components';
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('components/views/bookings/PaymentBoxes');
 
 const paymentOptions = [

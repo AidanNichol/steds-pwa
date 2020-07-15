@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactModal from 'react-modal';
 import { PaymentHelp } from './PaymentHelp';
-import infoSquare from '../../images/info-square.svg';
+import { Icon } from '../utility/Icon';
 
 const closeStyle = {
   background: '#606061',
@@ -52,7 +52,7 @@ class PaymentHelpDialog extends React.Component {
           aria-label='Show help about using the payment boxes'
           style={{ marginLeft: 4, borderWidth: 0, background: 'rgb(238,238,238)' }}
         >
-          <img src={infoSquare} alt='' style={{ width: 20 }} />
+          <Icon name='info_square' width='20' />
         </button>
 
         <ReactModal

@@ -23,13 +23,14 @@
 }
 
 .version {
-  grid-column: 23;
+  grid-column: 22 / span 2;
   grid-row: 1;
   align-self: center;
 }
 
 .signin {
-  grid-column: 15 / span 7;
+  // grid-column: 15 / span 7;
+  grid-column: span 8 / 21;
   grid-row: 1;
   align-self: center;
   button {
@@ -48,7 +49,6 @@
   grid-column: 9 / span 4;
   grid-row: 1 / 2;
   align-self: center;
-  ;
   left: -25px;
   position: relative;
   display: grid;

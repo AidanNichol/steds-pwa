@@ -1,8 +1,11 @@
 import React from 'react';
 // import Symbols from './Symbols';
-import { Icon } from '../Icon';
-import Logit from 'logit';
+import { Icon } from '../../Components/utility/Icon';
+import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the CSS
+
+import Logit from '../../logit';
 const logit = Logit('Reports/SVGcomponents/MemberSumm');
+
 const styles = {
   name: {
     textAnchor: 'end',
@@ -21,7 +24,8 @@ export const MemberSumm = ({ member, codes, ...props }) => {
   const wd = 30;
   const codeStart = vw - codes.length * wd;
   const vh = 16;
-  const opacity = (type, pos) => ({ opacity: pos <= 0.4 ? 0.4 : 1 });
+  // const opacity = (type, pos) => ({ opacity: pos <= 0.4 ? 0.4 : 1 });
+  const opacity = (type, pos) => (pos <= 0.4 ? { opacity: 0.4 } : {});
   const width = 14;
   const height = 14;
   return (

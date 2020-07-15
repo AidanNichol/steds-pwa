@@ -4,7 +4,7 @@ import classnames from 'classnames';
 import { Icon } from './Icon.jsx';
 import styled from 'styled-components';
 
-import Logit from 'logit';
+import Logit from '../../logit';
 var logit = Logit('components/utility/TooltipButton');
 const TooltipButton = (props) => {
   var {
@@ -14,16 +14,16 @@ const TooltipButton = (props) => {
     label,
     placement,
     tiptext,
-    visible = true,
+    visible = false,
     className,
     style,
     overlay,
     iconStyle,
     ...other
-  } = this.props;
+  } = props;
   logit('props', props);
   if (lable) label = lable;
-  if (!visible) return null;
+  if (visible !== true) return null;
 
   const clnm = classnames({
     [className]: className,
@@ -40,10 +40,11 @@ const TooltipButton = (props) => {
       type='button'
       style={{ position: 'relative', ...style }}
       {...other}
+      title={tiptext}
     >
       {icon ? <Icon name={icon} style={{ fontSize: '3em', ...iconStyle }} /> : null}{' '}
       {img ? <img src={img} alt='' style={iconStyle} /> : null}
-      {label ? label : this.props.children}
+      {label ? label : props.children}
       {overlay ? <span className='overlay'>{overlay}</span> : ''}
     </StyledButton>
   );

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, memo } from 'react';
 import _ from 'lodash';
 import { useStoreState, useStoreActions } from 'easy-peasy';
-import { fetchData } from '../EasyPeasy/use-data-api';
+import { fetchData } from '../store/use-data-api';
 
-import Logit from 'logit';
+import Logit from '../logit';
 import { AccountBox } from './SVGcomponents/AccountBox';
 var logit = Logit('Reports/WalkDayBookingSheet');
 

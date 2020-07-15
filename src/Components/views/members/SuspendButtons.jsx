@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import TooltipButton from '../../utility/TooltipButton';
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('components/views/members/SuspendButtons');
 
 const SuspendButtons = (props) => {

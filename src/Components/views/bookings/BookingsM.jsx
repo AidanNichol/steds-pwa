@@ -5,13 +5,13 @@ import classnames from 'classnames';
 // import _ from 'lodash';
 import { Panel } from '../../utility/AJNPanel';
 import SelectMember from '../../utility/RSelectMember';
-import { today } from '../../../EasyPeasy/dateFns';
+import { today } from '../../../store/dateFns';
 import styled from 'styled-components';
 import { PaymentsBoxes } from './PaymentsBoxes';
 import { ChangeLog } from './PaymentStatusLog';
 import { StatusTable } from './StatusTable';
 
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('component/views/bookings');
 
 export const Bookings = function Bookings(props) {

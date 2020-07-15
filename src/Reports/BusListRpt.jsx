@@ -2,8 +2,8 @@
 import React, { useEffect, useState, memo } from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import _ from 'lodash';
-import { fetchData } from '../EasyPeasy/use-data-api';
-import Logit from 'logit';
+import { fetchData } from '../store/use-data-api';
+import Logit from '../logit';
 var logit = Logit('Reports/BusListRpt');
 let colsPerPage = 4;
 
@@ -20,13 +20,19 @@ const ShowBookings = ({ members, title, number }) => {
     <section>
       {title && <div style={subHead}>{title}</div>}
       {members.map((bkng) => (
-        <div className='member' key={bkng.memberId}>
-          <span style={{ fontSize: 17, paddingLeft: 3 }}>
+        <div
+          className='member'
+          key={bkng.memberId}
+          style={{ fontSize: 17, lineHeight: 1.3 }}
+        >
+          <span style={{ paddingLeft: 3 }}>
             {number && <span>{pos++}.</span>}
             {bkng.sortName}
           </span>
           {bkng.annotation && (
-            <div style={{ fontSize: 14, color: 'red' }}>{` (${bkng.annotation})`}</div>
+            <div
+              style={{ fontSize: 14, color: 'red', lineHeight: 1.3 }}
+            >{` (${bkng.annotation})`}</div>
           )}
         </div>
       ))}
@@ -125,7 +131,7 @@ const showCol = (col, n, index) => {
   logit('showCol', { bus, car, wait, walk });
   const free = walk.capacity - (bus?.length || 0);
   const styles = {
-    walkTitle: { fontSize: 16, fontWeight: 'bold' },
+    walkTitle: { fontSize: 15, fontWeight: 'bold' },
     block: { width: '100%' },
   };
   return (

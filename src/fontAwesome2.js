@@ -1,31 +1,81 @@
 import React from 'react';
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { library } from '@fortawesome/fontawesome-svg-core';
-
-const symbs = [
-  'fas fa-car',
-  'fas fa-car-side',
-  'fas fa-bus',
-  'fad fa-bus',
-  'fas fa-slash',
-  'fas fa-pound-sign',
-  'fas fa-tenge',
-  'fas fa-times',
-  'fas fa-hand-holding',
-  'far fa-clock',
-  'far fa-circle',
-  'fas fa-edit',
-  'fas fa-alarm-clock',
-  'fas fa-arrow-alt-up',
-  'fas fa-arrow-alt-down',
-  'far fa-print',
-  'fas fa-user-plus',
-  'fas fa-plus',
-  'fas fa-user',
-  'fas fa-ban',
-  'fas fa-check',
-  'far fa-sack',
-];
+import { library, findIconDefinition } from '@fortawesome/fontawesome-svg-core';
+import {
+  // faCar,
+  // faCarSide,
+  // faBus,
+  faSlash,
+  faPoundSign,
+  faTenge,
+  faTimes,
+  faHandHolding,
+  faEdit,
+  // faAlarmClock,
+  faUserPlus,
+  faPlus,
+  // faUser,
+  faBan,
+  faCheck,
+} from '@fortawesome/free-solid-svg-icons';
+import {
+  faSlash as fadSlash,
+  faEdit as fadEdit,
+  faBus,
+  faCar,
+  faClock,
+  faCarSide,
+  faUser,
+  faPrint,
+  faSack,
+  faSpinnerThird,
+  faSpinner,
+  faArrowAltUp,
+  faArrowAltDown,
+  // faClock,
+  faCircle,
+} from '@fortawesome/pro-duotone-svg-icons';
+import {
+  faArrowAltUp as farArrowAltUp,
+  faArrowAltDown as farArrowAltDown,
+  faLongArrowDown,
+  faInfoSquare,
+  // faClock,
+  faCircle as farCircle,
+} from '@fortawesome/pro-regular-svg-icons';
+library.add(
+  faLongArrowDown,
+  faInfoSquare,
+  faCar,
+  faCarSide,
+  faBus,
+  faSlash,
+  fadSlash,
+  faPoundSign,
+  faTenge,
+  faTimes,
+  faHandHolding,
+  faEdit,
+  fadEdit,
+  // faAlarmClock,
+  faArrowAltUp,
+  faArrowAltDown,
+  farArrowAltUp,
+  farArrowAltDown,
+  faUserPlus,
+  faPlus,
+  faUser,
+  faBan,
+  faCheck,
+  faClock,
+  faCircle,
+  farCircle,
+  faPrint,
+  faSack,
+  faSpinnerThird,
+  faSpinner,
+);
+const symbs = ['fad faBus', 'far faClock', 'far faCircle', 'far faPrint', 'far faSack'];
 export const IconsLoad = () => (
   <span style={{ display: 'none' }}>
     {symbs.map((nm, j) => (
@@ -69,3 +119,8 @@ const plus = {
   ],
 };
 library.add(L, treasurer, plus);
+
+const glasses = findIconDefinition({ prefix: 'fas', iconName: 'glasses' });
+console.log('glasses', glasses);
+const bus = findIconDefinition({ prefix: 'fad', iconName: 'bus' });
+console.log('bus', bus);

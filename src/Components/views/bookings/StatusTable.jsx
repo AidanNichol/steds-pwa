@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import classnames from "classnames";
-import styled from "styled-components";
-import { useStoreState, debug } from "easy-peasy";
+import React, { useState } from 'react';
+import classnames from 'classnames';
+import styled from 'styled-components';
+import { useStoreState, debug } from 'easy-peasy';
 
-import { NewBookingCell } from "./NewBookingCell";
-import { OldBookingCell } from "./OldBookingCell";
-import { AnnotateBooking } from "./annotateBooking";
-import Logit from "logit";
-var logit = Logit("component/views/statusTable");
+import { NewBookingCell } from './NewBookingCell';
+import { OldBookingCell } from './OldBookingCell';
+import { AnnotateBooking } from './annotateBooking';
+import Logit from '../../../logit';
+var logit = Logit('component/views/statusTable');
 const delSettings = {
-  D: { "data-text": "Subs Due", style: { "--color": "green" } },
-  G: { "data-text": "Guest", style: { "--color": "blue" } },
-  L: { "data-text": "Subs Late", style: { "--color": "red" } },
-  S: { "data-text": "Suspended", style: { "--color": "black" } },
-  X: { "data-text": "Delete Me", style: { "--color": "red" } },
+  D: { 'data-text': 'Subs Due', style: { '--color': 'green' } },
+  G: { 'data-text': 'Guest', style: { '--color': 'blue' } },
+  L: { 'data-text': 'Subs Late', style: { '--color': 'red' } },
+  S: { 'data-text': 'Suspended', style: { '--color': 'black' } },
+  X: { 'data-text': 'Delete Me', style: { '--color': 'red' } },
 };
 const showAvailable = (walk) => {
   let free = walk.capacity - walk.booked;
@@ -24,25 +24,23 @@ const showAvailable = (walk) => {
 
 export const StatusTable = (props) => {
   const { openWalks, closeit } = props;
-  const [annoDialog, setAnnoDialog] = useState(
-    { isOpen: false, booking: null },
-  );
+  const [annoDialog, setAnnoDialog] = useState({ isOpen: false, booking: null });
   const index = useStoreState((state) => state.names);
   const account = useStoreState((state) => state.accountStatus.bookings);
   const members = (account.Members || []).map((m) => {
     let mm = index.get(m.memberId);
-    logit("members map", debug(m), debug(mm));
+    logit('members map', debug(m), debug(mm));
     mm.showState = getShowState(mm.subsStatus?.status, mm.deleteState);
     return mm;
   });
 
-  logit("account", account);
-  logit("openWalks", openWalks);
+  logit('account', account);
+  logit('openWalks', openWalks);
   var mCl = members.map((member, i) => {
-    logit("member", debug(member), index);
+    logit('member', debug(member), index);
     return classnames({
       avail: true,
-      ["member" + i]: true,
+      ['member' + i]: true,
       suspended: member.suspended,
       [member.subs]: true,
     });
@@ -50,8 +48,8 @@ export const StatusTable = (props) => {
   const openAnno = (booking) => setAnnoDialog({ booking, isOpen: true });
   const closeAnno = () => setAnnoDialog({ booking: null, isOpen: false });
   return (
-    <div className="bTable status">
-      <StatusRow className={"heading bLine memsx" + members.length}>
+    <div className='bTable status'>
+      <StatusRow className={'heading bLine memsx' + members.length}>
         <DV>
           Date <br /> Venue
         </DV>
@@ -72,8 +70,8 @@ export const StatusTable = (props) => {
         const accountId = account.accountId;
         return (
           <StatusRow
-            className={"walk bLine memsx" + members.length}
-            key={w + "XYZ" + walkId}
+            className={'walk bLine memsx' + members.length}
+            key={w + 'XYZ' + walkId}
           >
             <DV>
               {walkId.substr(1)}
@@ -85,35 +83,33 @@ export const StatusTable = (props) => {
             {members.map((member, i) => {
               const { memberId } = member;
               let booking = account.bookings[walkId + memberId];
-              const key = "QQQ" + walkId + memberId;
-              return !booking || booking.status.length > 1
-                ? (
-                  <NewBookingCell
-                    {...{
-                      walkId,
-                      memberId,
-                      full,
-                      fee,
-                      i,
-                      accountId,
-                      key,
-                    }}
-                  />
-                )
-                : (
-                  <OldBookingCell
-                    {...{
-                      booking,
-                      i,
-                      fee,
-                      lastCancel,
-                      openAnno,
-                      closeAnno,
-                      accountId,
-                      key,
-                    }}
-                  />
-                );
+              const key = 'QQQ' + walkId + memberId;
+              return !booking || booking.status.length > 1 ? (
+                <NewBookingCell
+                  {...{
+                    walkId,
+                    memberId,
+                    full,
+                    fee,
+                    i,
+                    accountId,
+                    key,
+                  }}
+                />
+              ) : (
+                <OldBookingCell
+                  {...{
+                    booking,
+                    i,
+                    fee,
+                    lastCancel,
+                    openAnno,
+                    closeAnno,
+                    accountId,
+                    key,
+                  }}
+                />
+              );
             })}
           </StatusRow>
         );
@@ -123,10 +119,10 @@ export const StatusTable = (props) => {
   );
 };
 const getShowState = (subsStatus, deleteState) => {
-  logit("getShowState In:", subsStatus, deleteState);
-  let state = subsStatus === "ok" ? "" : subsStatus?.toUpperCase()[0];
-  if (deleteState >= "S") state = deleteState;
-  logit("getShowState Out:", state);
+  logit('getShowState In:', subsStatus, deleteState);
+  let state = subsStatus === 'ok' ? '' : subsStatus?.toUpperCase()[0];
+  if (deleteState >= 'S') state = deleteState;
+  logit('getShowState Out:', state);
   return state;
 };
 
@@ -203,7 +199,7 @@ const StatusRow = styled.div`
         width: 32px;
       }
 
-      .annotation {
+      /* .annotation {
         padding-top: 0;
         font-size: 0.6em;
         display: block;
@@ -213,7 +209,7 @@ const StatusRow = styled.div`
         text-overflow: ellipsis;
 
         width: 100%;
-      }
+      } */
 
       .hotspot {
         display: none;
@@ -226,7 +222,8 @@ const StatusRow = styled.div`
           display: inline-block;
         }
 
-        .normal {
+        .normal,
+        .annotation {
           display: none;
         }
         .cellRow {
@@ -266,36 +263,6 @@ const StatusRow = styled.div`
   .tooltip-inner {
     max-width: none;
   }
-
-  /* .heading {
-    [text] {
-      &::after {
-        cursor: default;
-        display: block;
-        font-family: sans-serif;
-        font-style: italic;
-        font-weight: bold;
-        width: 6em;
-        height: 1em;
-        line-height: 100%;
-        pointer-events: none;
-        position: relative;
-        right: 0;
-        text-align: center;
-        user-select: none;
-        z-index: 9999;
-        transform: rotate(-70deg);
-        opacity: 0.2;
-
-        content: attr(text);
-        bottom: 0;
-        color: var(--color);
-        font-size: 250%;
-        left: -50%;
-        top: 460%;
-      }
-    }
-  } */
 `;
 const MemberName = styled.div`
   &::after {

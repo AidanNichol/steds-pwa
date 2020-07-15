@@ -1,9 +1,16 @@
 import React from 'react';
 import { ReactComponent as Logo } from '../images/St.EdwardsLogoSimple.svg';
-// import { ReactComponent as Logos } from '../images/requestTypeIcons.svg';
+import { useStoreState, useStoreActions } from 'easy-peasy';
+import _ from 'lodash';
+import { paidUp, getSubsStatus } from '../store/model/members';
+import { pcexp } from '../Components/utility/normalizersH';
+
+import { useFetchData } from '../store/use-data-api';
+import useFitText from 'use-fit-text';
+
 import { format } from 'date-fns';
-import Logit from 'logit';
-var logit = Logit('reports/membershipListPDF');
+import Logit from '../logit';
+var logit = Logit('reports/membershipListRpt');
 // Create styles
 const timestamp = format(new Date(), 'yyyy-MM-dd HH:mm');
 const borderTop = {
@@ -12,7 +19,7 @@ const borderTop = {
   borderTopWidth: 1,
   marginTop: 5,
   paddingTop: 5,
-  marginRight: 3
+  marginRight: 3,
 };
 
 function showSubs(mem) {
@@ -20,46 +27,46 @@ function showSubs(mem) {
   const subsMap = {
     OK: { color: 'green' },
     due: { color: 'orange', fontWeight: 'bold' },
-    late: { color: 'red', fontWeight: 'bold' }
+    late: { color: 'red', fontWeight: 'bold' },
   };
   let stat = statusMap[mem.memberStatus || '?'];
   if (mem.memberId === 'M2031') logit('mem', mem, stat);
   if (stat !== '') return [stat, {}];
 
-  // let subs = getSubsStatus(mem);
-  let subs = mem.subsStatus;
+  let subs = getSubsStatus(mem);
+  // let subs = mem.subsStatus;
   stat = `${mem.subscription ? "'" + (parseInt(mem.subscription) % 100) : '---'}`;
-  let atts = subsMap[subs.status];
+  let atts = subsMap[subs?.status];
   if (mem.memberId === 'M2031') logit('subs', subs, stat, atts);
   return [stat, atts];
 }
 
-const Document = props => {
+const Document = (props) => {
   const style = {
     width: '297mm',
     height: '210mm',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
   };
   return <div style={style}>{props.children}</div>;
 };
-const Page = props => {
+const Page = (props) => {
   const style = {
     flexDirection: 'column',
     backgroundColor: '#ffffff',
     justifyContent: 'flex-start',
     fontSize: 14,
-    breakBefore: props.page === 1 ? 'never' : 'page'
+    breakBefore: props.page === 1 ? 'never' : 'page',
   };
   return <div style={{ ...style, ...props.style }}>{props.children}</div>;
 };
 
-const ReportBody = props => {
+const ReportBody = (props) => {
   const style = {
     fontSize: 10,
     flexDirection: 'column',
     marginLeft: 10,
     marginRight: 0,
-    paddingRight: 10
+    paddingRight: 10,
   };
   return <div style={{ ...style, ...props.style }}>{props.children}</div>;
 };
@@ -68,7 +75,7 @@ const Banner = ({ page, of, className }) => {
     justifyContent: 'space-between',
     fontSize: 10,
     display: 'grid',
-    gridTemplateColumns: '95px 1fr 95px'
+    gridTemplateColumns: '95px 1fr 95px',
   };
   return (
     <div className={className} style={style}>
@@ -89,13 +96,14 @@ const Banner = ({ page, of, className }) => {
   );
 };
 
-const DataRow = props => {
+const DataRow = (props) => {
   const style = {
     ...borderTop,
-    fontSize: 14,
+    fontSize: 13,
     display: 'grid',
-    gridTemplateColumns: '85fr 25fr 155fr 70fr 25fr 130fr 145fr 75fr',
-    gridColumnGap: 5
+    height: 36,
+    gridTemplateColumns: '127px 37px 233px 105px 37px 195px 218px 113px',
+    gridColumnGap: 5,
   };
   return <div style={{ ...style, ...props.style }}>{props.children}</div>;
 };
@@ -118,45 +126,99 @@ const HeaderRow = () => (
     <div>Medical</div>
   </DataRow>
 );
-const MemberRow = ({ mem }) => (
-  <DataRow key={mem._id} style={{ ...borderTop }}>
-    <div>{mem.fullNameR}</div>
-    <div style={{ justifySelf: 'center' }}>{showSubs(mem)[0]}</div>
-    <div>{mem.address}</div>
-    <div>
-      <div>H:{mem.phone}</div>
-      <div>M:{mem.mobile}</div>
+const prepAddr = (addr) => {
+  let result = pcexp.exec(addr);
+  if (!result) return addr;
+  return result[1] + result[2].toUpperCase() + ' ' + result[4].toUpperCase();
+};
+
+const DataCell = React.forwardRef((props, ref) => {
+  const { children, style, ...rest } = props;
+  return (
+    <div ref={ref} style={{ height: 36, ...style }} {...rest}>
+      {children}
     </div>
-    <div style={{ justifySelf: 'flex-end' }}>{mem.memNo}</div>
-    <div style={{ fontSize: 12 }}>{mem.email}</div>
-    <div>{mem.nextOfKin}</div>
-    <div style={{ fontSize: 12 }}>{mem.medical}</div>
-  </DataRow>
-);
+  );
+});
+
+const MemberRow = ({ mem }) => {
+  const [subs, atts] = showSubs(mem);
+  const { fontSize: fsM, ref: refM } = useFitText();
+  const { fontSize: fsK, ref: refK } = useFitText();
+  const { fontSize: fsN, ref: refN } = useFitText();
+  const { fontSize: fsA, ref: refA } = useFitText();
+  const { fontSize: fsE, ref: refE } = useFitText();
+  const { fontSize: fsP, ref: refP } = useFitText();
+
+  return (
+    <DataRow key={mem._id} style={{ ...borderTop }}>
+      <DataCell ref={refN} style={{ fontSize: fsN }}>
+        {mem.sortName}
+      </DataCell>
+      <div style={{ justifySelf: 'center', ...atts }}>{subs}</div>
+      <DataCell ref={refA} style={{ fontSize: fsA }}>
+        {prepAddr(mem.address)}
+      </DataCell>
+      <DataCell ref={refP} style={{ fontSize: fsP }}>
+        {'H:' + mem.phone + '\nM:' + mem.mobile.replace('/', '\n  ')}
+        {/* <div>H:{mem.phone}</div>
+        <div>M:{mem.mobile}</div> */}
+      </DataCell>
+      <div style={{ justifySelf: 'flex-end', fontSize: 12 }}>
+        {mem.memberId.substr(1)}
+      </div>
+      <DataCell ref={refE} style={{ fontSize: fsE }}>
+        {mem.email}
+      </DataCell>
+      <div ref={refK} style={{ fontSize: fsK }}>
+        {mem.nextOfKin}
+      </div>
+      <DataCell ref={refM} style={{ fontSize: fsM }}>
+        {mem.medical.replace(/,/, ', ')}
+      </DataCell>
+    </DataRow>
+  );
+};
 // Create Document Component
-export const MembershipListReport = ({ members }) => {
-  logit('invoked', members.length, members);
+export const MembershipListReport = () => {
+  const sortBy = useStoreState((s) => s.members.sortBy);
+  const showAll = useStoreState((s) => s.members.showAll);
+  const ready = useStoreState((a) => a.reports.ready);
+  const imReady = useStoreActions((a) => a.reports.imReady);
+
+  // const [pages, setPages] = useState([]);
+
+  const resp = useFetchData(`allMembers`);
+  logit('allMembers fetchData returned', resp);
+  if ((resp?.data?.length ?? 0) <= 0) return null;
+  let members = _.sortBy(
+    resp.data?.filter((m) => showAll || paidUp(m)),
+    [sortBy],
+  );
   const memPerPage = 15;
-  const noPages = Math.ceil(members.length / memPerPage);
   // partition the members into pages
   const pages = [];
   for (let strt = 0; strt < members.length; strt += memPerPage) {
     pages.push(members.slice(strt, strt + memPerPage));
   }
   logit('pages', pages);
+  logit('report.ready', ready);
+  // following lines triggers a render which makes the useFitText hook work
+  imReady('membersReport');
+
   return (
     <Document
       title="St.Edward's Members"
-      author="Booking System"
-      subject="Membership List"
+      author='Booking System'
+      subject='Membership List'
     >
       {pages.map((page, no) => (
-        <Page key={page[0]._id} page={page}>
-          <Banner page={no + 1} of={noPages} />
+        <Page key={page[0].memberId} page={page}>
+          <Banner page={no + 1} of={pages.length} />
           <ReportBody>
             <HeaderRow />
-            {page.map(mem => (
-              <MemberRow key={mem._id} mem={mem} />
+            {page.map((mem) => (
+              <MemberRow key={mem.memberId} mem={mem} />
             ))}
           </ReportBody>
         </Page>
@@ -164,5 +226,3 @@ export const MembershipListReport = ({ members }) => {
     </Document>
   );
 };
-
-// let docname = '/Documents/My Documents/StEdwards/membersList.pdf';

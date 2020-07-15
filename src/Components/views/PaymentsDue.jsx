@@ -9,7 +9,7 @@ import classnames from 'classnames';
 import styled from 'styled-components';
 import { Icon } from '../utility/Icon';
 
-import Logit from 'logit';
+import Logit from '../../logit';
 var logit = Logit('components/views/PaymentsDue2');
 
 const detail = ({ bkng, className }) => {

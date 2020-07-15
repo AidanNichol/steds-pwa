@@ -6,7 +6,7 @@
 
   .obj {
     margin: 10px;
-    margin-left: 40px;
+    // margin-left: 40px;
 
     h4 {
       background-color: cyan;
@@ -31,7 +31,7 @@
     }
 
     > div {
-      padding-left: 10px;
+      // padding-left: 10px;
     }
 
     .obj {
@@ -42,7 +42,8 @@
       display: none;
     }
   }
-  input.envfile, .name input {
+  input.envfile,
+  .name input {
     width: 35em;
   }
   .item {

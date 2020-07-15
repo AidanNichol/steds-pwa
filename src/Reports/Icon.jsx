@@ -27,6 +27,7 @@ import { ReactComponent as user_disable } from '../images/user-disable.svg';
 import { ReactComponent as user_enable } from '../images/user-enable.svg';
 import { ReactComponent as Delete_Member } from '../images/Delete_Member.svg';
 // import { ReactComponent as Printer } from '../images/Printer.svg';
+import { Icon as AfIcon } from '../Components/utility/Icon';
 
 const icons = {
   A: icon_A,
@@ -57,9 +58,12 @@ const icons = {
   Delete_Member,
   // Printer
 };
-
-export const Icon = ({ type, name, className, ...rest }) => {
-  const Comp = icons[type];
-  if (!Comp) console.warn('icon', type);
-  return <Comp className={(className || '') + ` icon ${type} ${name}`} {...rest} />;
+export const Icon = (props) => {
+  console.log('AfTicon', props);
+  return <AfIcon {...props} />;
 };
+// export const Icon = ({ type, name, className, ...rest }) => {
+//   const Comp = icons[type];
+//   if (!Comp) console.warn('icon', type);
+//   return <Comp className={(className || '') + ` icon ${type} ${name}`} {...rest} />;
+// };

@@ -17,25 +17,33 @@ import './styles/watermark.scss';
 import './styles/react-select.scss';
 import './styles/paymentsSummary.scss';
 import './styles/settings.scss';
-import * as serviceWorker from './serviceWorker';
+// import * as serviceWorker from './serviceWorker';
+import { App } from './app';
 import { StoreProvider } from 'easy-peasy';
-import epStore from './EasyPeasy/store';
+import epStore from './store/store';
 import { IconsLoad } from './fontAwesome2';
+import { ReactQueryDevtools } from 'react-query-devtools';
+
 // import ServiceWorkerWrapper from './Components/layouts/SWwrapper';
 
-import MainLayout from './Components/layouts/MainLayout';
+// import MainLayout from './Components/layouts/MainLayout';
 
 console.log('epStore Provider', epStore, StoreProvider);
 
 ReactDOM.render(
-  <StoreProvider store={epStore}>
-    {/* <ServiceWorkerWrapper> */}
-    <div>
+  <>
+    <StoreProvider store={epStore}>
+      <App />
+      <IconsLoad />
+      {/* <ServiceWorkerWrapper> */}
+      {/* <div>
       <IconsLoad />
       <MainLayout />
-    </div>
-    {/* </ServiceWorkerWrapper> */}
-  </StoreProvider>,
+    </div> */}
+      {/* </ServiceWorkerWrapper> */}
+    </StoreProvider>
+    <ReactQueryDevtools initialIsOpen={false} />
+  </>,
   document.getElementById('root'),
 );
 // });
@@ -43,4 +51,4 @@ ReactDOM.render(
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: http://bit.ly/CRA-PWA
-serviceWorker.register();
+// serviceWorker.register();

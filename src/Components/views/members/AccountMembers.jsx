@@ -3,7 +3,7 @@ import { useStoreActions, useStoreState } from 'easy-peasy';
 import styled from 'styled-components';
 import TooltipButton from '../../utility/TooltipButton';
 
-import Logit from 'logit';
+import Logit from '../../../logit';
 var logit = Logit('components/views/members/AccountMembers');
 const defaultState = { stage: '', addAccount: null };
 const AccountMembers = (props) => {

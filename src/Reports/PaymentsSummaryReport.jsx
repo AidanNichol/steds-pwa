@@ -1,8 +1,9 @@
 import React from 'react';
 import { ReactComponent as Logo } from '../images/St.EdwardsLogoSimple.svg';
-import { dispDate, getTimestamp } from '../EasyPeasy/dateFns';
+import { useStoreActions } from 'easy-peasy';
+import { dispDate, getTimestamp } from '../store/dateFns';
 
-const Logit = require('logit');
+const Logit = require('../logit');
 var logit = Logit('Reports/PaymentSummaryReport');
 
 const Document = (props) => {
@@ -50,6 +51,8 @@ const Banner = ({ title, className }) => {
 };
 
 export const PaymentsSummaryReport = ({ banking, accounts }) => {
+  const imReady = useStoreActions((a) => a.reports.imReady);
+
   // logit('rprops', props);
   // const banking = useLatestBanking();
   logit('Banking', banking);
@@ -59,7 +62,7 @@ export const PaymentsSummaryReport = ({ banking, accounts }) => {
   const start = startDate.substr(0, 16).replace(/:/g, '.');
   let docname = `paymentSummary-${start}.pdf`;
   logit('name', { docname });
-
+  imReady('sum');
   return (
     <Document title='Money Banked' author='Booking System' subject='Money Banked'>
       <Page title={' Money Banked '}>
@@ -97,9 +100,9 @@ export const PaymentsMade = ({ banking, accounts }) => {
 
   return (
     <div style={{ fontSize: '1.2rem' }}>
-      <h3 style={styles.title}>{`${dispDate(banking.startDate)} to ${dispDate(
-        banking.endDate,
-      )}`}</h3>
+      <h3 style={styles.title}>
+        {`${dispDate(banking.startDate)} to ${dispDate(banking.endDate)}`}
+      </h3>
       <div style={styles.columns}>
         {accounts.map((account) => (
           <div style={styles.line} key={account.accountId}>
