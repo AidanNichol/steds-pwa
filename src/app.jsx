@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 // import { useStoreState, useStoreActions } from 'easy-peasy';
 import styled from 'styled-components';
-import { IconsLoad } from './fontAwesome2';
+// import { IconsLoad } from './fontAwesome2';
 import MainLayout from './Components/layouts/MainLayout';
 import { Modal } from './Components/layouts/modal';
 import logo from './images/St.EdwardsLogoSimple.svg';
@@ -61,7 +61,7 @@ export const App = () => {
   });
   return (
     <div>
-      <IconsLoad />
+      {/* <IconsLoad /> */}
       <MainLayout />
       {isServiceWorkerUpdated && (
         <Modal isOpen={true} style={{ background: 'white', height: '20%' }}>
