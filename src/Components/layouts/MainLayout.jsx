@@ -1,27 +1,27 @@
-import React, { Suspense } from "react";
-import classnames from "classnames";
-import { LoginForm } from "../utility/Login";
-import MembersList from "../views/members/MembersList";
-import Bookings from "../views/bookings/BookingsM";
-import { BusLists } from "../views/BusListsM";
-import { PaymentsMST } from "../views/PaymentsMST";
-import { LoadingStatus } from "../views/LoadingStatus";
-import { DebugOptions } from "../utility/debugOptions";
-import NewWindow from "react-new-window";
-import { Loading } from "../utility/Icon";
+import React, { Suspense } from 'react';
+import classnames from 'classnames';
+import { LoginForm } from '../utility/Login';
+import MembersList from '../views/members/MembersList';
+import Bookings from '../views/bookings/BookingsM';
+import { BusLists } from '../views/BusListsM';
+import { PaymentsMST } from '../views/PaymentsMST';
+import { LoadingStatus } from '../views/LoadingStatus';
+import { DebugOptions } from '../utility/debugOptions';
+import NewWindow from 'react-new-window';
+import { Loading } from '../utility/Icon';
 
-import { useStoreState, useStoreActions, debug } from "easy-peasy"; // 👈 import the hook
+import { useStoreState, useStoreActions, debug } from 'easy-peasy'; // 👈 import the hook
 
-import logo from "../../images/St.EdwardsLogoSimple.svg";
+import logo from '../../images/St.EdwardsLogoSimple.svg';
 
-import Logit from "../../logit";
-var packageJson = require("../../../package.json");
-var logit = Logit("components/layouts/MainLayout");
+import Logit from '../../logit';
+var packageJson = require('../../../package.json');
+var logit = Logit('components/layouts/MainLayout');
 let loadingStatus;
 const version = packageJson.version;
 
 const loadPage = (curPage, loading, loaded, root) => {
-  logit("load page", curPage, loading, loaded);
+  logit('load page', curPage, loading, loaded);
   if (loading) {
     return (
       <span>
@@ -34,22 +34,20 @@ const loadPage = (curPage, loading, loaded, root) => {
   }
 
   switch (curPage) {
-    case "membersList":
+    case 'membersList':
       return <MembersList />;
-    case "bookings":
+    case 'bookings':
       return <Bookings />;
-    case "payments":
+    case 'payments':
       return <PaymentsMST />;
-    case "buslists":
+    case 'buslists':
       return <BusLists />;
-    case "debugSettings":
+    case 'debugSettings':
       return <DebugOptions {...{ root }} />;
     // case "loading":
     //   return <LoadingStatus loadingStatus={loadingStatus} />;
     default:
-      return <div>
-        Welcome to St.Edwards Booking System - please pick a page.
-      </div>;
+      return <div>Welcome to St.Edwards Booking System - please pick a page.</div>;
   }
 };
 
@@ -68,7 +66,7 @@ const Main = function Main(props) {
   const [showDebug, setShowDebug] = React.useState(false);
   const root = useStoreState((state) => state.debugSettings.nodes);
 
-  logit("report state", debug(useStoreState((s) => s.reports)));
+  logit('report state', debug(useStoreState((s) => s.reports)));
 
   myPages = [];
   const bookingsAdmin = useStoreState((s) => s.user.isBookingsAdmin);
@@ -84,10 +82,10 @@ const Main = function Main(props) {
       </span>
     );
   };
-  logit("currentPage", router.page, router);
+  logit('currentPage', router.page, router);
 
   const PrintButton = ({ wRef }) => (
-    <button onClick={() => wRef.current.window.print()} className="screenOnly">
+    <button onClick={() => wRef.current.window.print()} className='screenOnly'>
       Print
     </button>
   );
@@ -95,8 +93,8 @@ const Main = function Main(props) {
     <div>
       <div
         style={{
-          position: "relative",
-          overflow: "hidden",
+          position: 'relative',
+          overflow: 'hidden',
         }}
       >
         {/* <button onClick={toggleModal}>open modal</button>
@@ -108,26 +106,26 @@ const Main = function Main(props) {
           </footer>
         </Modal> */}
       </div>
-      <div className="mainPage">
+      <div className='mainPage'>
         <img
-          className="logo"
+          className='logo'
           src={logo}
-          width="40px"
-          alt=""
+          width='40px'
+          alt=''
           onClick={() => {
-            setPage("debugSettings");
+            setPage('debugSettings');
           }}
-        /> // onClick={() => {setShowDebug(!showDebug)}}
-        <span className="version">{`v${version}`}</span>
+        />
+        <span className='version'>{`v${version}`}</span>
         <LoginForm />
-        <div className="nav">
-          <Link page="bookings" name="Bookings" show={bookingsAdmin} />
-          <Link page="buslists" name="Buslist" show={bookingsAdmin} />
-          <Link page="payments" name="Payments" show={bookingsAdmin} />
-          <Link page="membersList" name="Members" show={membersAdmin} />
+        <div className='nav'>
+          <Link page='bookings' name='Bookings' show={bookingsAdmin} />
+          <Link page='buslists' name='Buslist' show={bookingsAdmin} />
+          <Link page='payments' name='Payments' show={bookingsAdmin} />
+          <Link page='membersList' name='Members' show={membersAdmin} />
         </div>
 
-        <div style={{ padding: 5 }} className="maincontent">
+        <div style={{ padding: 5 }} className='maincontent'>
           {loadPage(router.page, false, storeLoaded, root)}
         </div>
       </div>
@@ -142,14 +140,14 @@ const Main = function Main(props) {
           ref={printWindow}
           title={title}
           copyStyles={true}
-          center={"screen"}
+          center={'screen'}
           onUnload={() => setDisplay(false)}
           features={{
             width: Math.min(window.screen.width, 1200),
             height: Math.min(window.screen.height, 850),
           }}
         >
-          <Suspense fallback={<Loading style={{ padding: "45%" }} />}>
+          <Suspense fallback={<Loading style={{ padding: '45%' }} />}>
             {/* <h1>Hi 👋</h1> */}
             <PrintButton wRef={printWindow} />
             <Report {...rprops} />
@@ -161,7 +159,7 @@ const Main = function Main(props) {
           ref={printWindow}
           title={title}
           copyStyles={true}
-          center={"screen"}
+          center={'screen'}
           onUnload={() => setShowDebug(false)}
           features={{
             width: Math.min(window.screen.width, 1200),
