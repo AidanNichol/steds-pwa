@@ -1,11 +1,10 @@
 //@ts-check
-// const BrowserWindow = remote.BrowserWindow;
 import React from 'react';
+import logo from '../../images/St.EdwardsLogoSimple.svg';
 
 import styled from 'styled-components';
 import Logit from '../../logit';
 import { useStoreState, useStoreActions } from 'easy-peasy'; // 👈import the helper
-// import { settingsModel } from '../../store/model/debugSettings'; // 👈 import our model type
 import { node } from '../../store/model/debugSettings'; // 👈 import our model type
 import { getEnableString } from '../../store/model/debugSettings';
 
@@ -48,24 +47,34 @@ const ShowBool = (props: boolProps) => {
 
   logme('showBool', obj.name, obj.state, stateName, obj);
   return (
-    <div key={obj.name} className={stateName + ' ' + (className ?? '')} {...{ onClick }}>
-      <input
-        key={obj.name + 'I'}
-        type='checkbox'
-        checked={obj.state === select.YES}
-        ref={(input) => {
-          if (input) {
-            input.indeterminate = obj.state === select.SOME;
-          }
-        }}
-      />
+    <div
+      key={obj.name}
+      className={stateName + ' ' + (className ?? '')}
+      style={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      }}
+      {...{ onClick }}
+    >
       <span>
-        {' '}
+        <input
+          key={obj.name + 'I'}
+          type='checkbox'
+          checked={obj.state === select.YES}
+          readOnly
+          ref={(input) => {
+            if (input) {
+              input.indeterminate = obj.state === select.SOME;
+            }
+          }}
+        />{' '}
         {obj.name}
+      </span>
+      <span>
         {obj.count && `[${obj.count[0]},${obj.count[1]} ]`}
         {obj.gc && `[${obj.gc[0]},${obj.gc[1]} ]`}
         &nbsp;{select[obj.state]}&nbsp;{select[obj.derivedState]}
-        {/* &nbsp;{(obj.state === select.SOME && derivedStateName) || ''} */}
       </span>
     </div>
   );
@@ -174,14 +183,10 @@ const ObjectDiv = styled.div`
   }
 `;
 export const DebugOptions = React.memo((props) => {
-  // const [root, setRoot] = useImmer({} as node);
-  const [showRaw, setShowRaw] = React.useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const changes = useStoreState((state) => state.debugSettings.changes) as number;
 
-  // const [, setRerender] = React.useState(false);
-  // const refRoot = React.useRef(root);
   const root = useStoreState((state) => state.debugSettings.nodes);
-  // const enableString = useStoreState((state) => state.debugSettings.enableString);
   const save = useStoreActions((actions) => (actions.debugSettings as any).save);
   const changeSelect = useStoreActions(
     (actions) => (actions.debugSettings as any).changeSelect,
@@ -190,41 +195,21 @@ export const DebugOptions = React.memo((props) => {
 
   return (
     <>
-      <button
-        // style={{ position: 'fixed', top: 0, left: 0 }}
-        onClick={() => {
-          setShowRaw(!showRaw);
-        }}
-      >
-        toggle
-      </button>
-      <span>{changes}</span>
-      {showRaw ? (
-        <pre>
-          {JSON.stringify(root, (key, value) => (key === 'root' ? 'root' : value), ' ')}
-        </pre>
-      ) : (
-        <div id='settings-page'>
-          <div className='item'>
-            <img
-              className='main-logo'
-              src={`../assets/St.EdwardsLogoSimple.svg`}
-              height='120px'
-              alt=''
-            />
-            <div className='main-text'>
-              <div>St.Edwards Booking System</div>
-              <div style={{ fontSize: '1em' }}>Debug Options</div>
-            </div>
-          </div>
-          <div>
-            <button onClick={save}>Save</button>
-            <ObjectTree id='*' {...{ changeSelect, root }} />
-            <button onClick={save}>Save</button>
-            <div>enable: {getEnableString(root, '*', select.NO).substr(1)}</div>
+      <div id='settings-page'>
+        <div className='item'>
+          <img className='main-logo' src={logo} height='120px' alt='' />
+          <div className='main-text'>
+            <div>St.Edwards Booking System</div>
+            <div style={{ fontSize: '1em' }}>Debug Options</div>
           </div>
         </div>
-      )}
+        <div>
+          <button onClick={save}>Save</button>
+          <ObjectTree id='*' {...{ changeSelect, root }} />
+          <button onClick={save}>Save</button>
+          <div>enable: {getEnableString(root, '*', select.NO).substr(1)}</div>
+        </div>
+      </div>
     </>
   );
 });
