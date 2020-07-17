@@ -4,7 +4,7 @@ import { Icon } from '../../utility/Icon';
 import { useStoreActions } from 'easy-peasy';
 import { now } from '../../../store/dateFns';
 import Logit from '../../../logit';
-var logit = Logit('components/utility/RSelectMember');
+var logit = Logit('components/views/bookings/OldBookingCell');
 
 export const OldBookingCell = React.memo((props) => {
   const { booking, i, fee, lastCancel, openAnno } = props;
@@ -19,7 +19,7 @@ export const OldBookingCell = React.memo((props) => {
     bookingChange({ walkId, memberId, req, fee });
   };
   let cancel = now() > lastCancel && status === 'B' ? 'L' : 'X';
-  const len = annotation.length;
+  const len = annotation?.length ?? 0;
   const annStyle = { '--tw': `${len}ch`, '--ad': `${len / 4}s` };
   logit('cancel?', walkId, lastCancel, now(), cancel);
   return (
@@ -49,6 +49,9 @@ const Marquee = styled.span`
   height: auto;
   display: inline-block;
   font-size: 0.7em;
+  position: relative;
+  bottom: 6px;
+  z-index: 100;
   &:hover {
     display: none;
   }
@@ -65,8 +68,6 @@ const Marquee = styled.span`
     animation: marquee var(--ad) linear infinite;
     animation-play-state: running;
     padding: 0;
-    position: relative;
-    bottom: 3px;
   }
 
   @keyframes marquee {
