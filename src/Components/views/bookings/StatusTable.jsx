@@ -7,7 +7,7 @@ import { NewBookingCell } from './NewBookingCell';
 import { OldBookingCell } from './OldBookingCell';
 import { AnnotateBooking } from './annotateBooking';
 import Logit from '../../../logit';
-var logit = Logit('component/views/statusTable');
+var logit = Logit('component/views/bookings/statusTable');
 const delSettings = {
   D: { 'data-text': 'Subs Due', style: { '--color': 'green' } },
   G: { 'data-text': 'Guest', style: { '--color': 'blue' } },
