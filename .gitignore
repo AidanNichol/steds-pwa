@@ -26,3 +26,5 @@ yarn-error.log*
 .yarn*
 /junk
 /docs
+src/images/myAfIcons.zip
+src/Components/utility/Icon1.jsx
