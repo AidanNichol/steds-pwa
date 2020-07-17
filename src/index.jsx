@@ -35,12 +35,6 @@ ReactDOM.render(
     <StoreProvider store={epStore}>
       <App />
       <IconsLoad />
-      {/* <ServiceWorkerWrapper> */}
-      {/* <div>
-      <IconsLoad />
-      <MainLayout />
-    </div> */}
-      {/* </ServiceWorkerWrapper> */}
     </StoreProvider>
     <ReactQueryDevtools initialIsOpen={false} />
   </>,
