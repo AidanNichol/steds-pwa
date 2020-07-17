@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import logit from '../../logit';
 
 const X = [
   { icon: ['fas', 'slash'], color: 'white', transform: 'up-2' },
@@ -80,6 +81,8 @@ export const Icon = ({ type, name, className: cls, size, ...rest }) => {
         ))}
       </span>
     );
+  } else {
+    logit(`can't find`, name);
   }
 
   console.log('Icon2', name, type);
