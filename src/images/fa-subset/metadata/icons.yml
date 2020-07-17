@@ -1,0 +1,440 @@
+arrow-alt-down:
+  changes:
+    - 5.0.0
+    - 5.10.1
+    - 5.11.0
+    - 5.11.1
+  label: Alternate Arrow Down
+  search:
+    terms:
+      - download
+  styles:
+    - duotone
+    - regular
+  unicode: f354
+  voted: false
+arrow-alt-up:
+  changes:
+    - 5.0.0
+    - 5.10.1
+    - 5.11.0
+    - 5.11.1
+  label: Alternate Arrow Up
+  search:
+    terms:
+      - upload
+  styles:
+    - duotone
+    - regular
+  unicode: f357
+  voted: false
+ban:
+  changes:
+    - '1'
+    - 5.0.0
+  label: ban
+  search:
+    terms:
+      - abort
+      - ban
+      - block
+      - cancel
+      - delete
+      - hide
+      - prohibit
+      - remove
+      - stop
+      - trash
+  styles:
+    - solid
+  unicode: f05e
+  voted: false
+bus:
+  changes:
+    - '4.2'
+    - 5.0.0
+    - 5.1.0
+  label: Bus
+  search:
+    terms:
+      - public transportation
+      - transportation
+      - travel
+      - vehicle
+  styles:
+    - duotone
+  unicode: f207
+  voted: false
+bus-alt:
+  changes:
+    - 5.1.0
+  label: Bus Alt
+  search:
+    terms:
+      - mta
+      - public transportation
+      - transportation
+      - travel
+      - vehicle
+  styles:
+    - duotone
+  unicode: f55e
+  voted: false
+car:
+  changes:
+    - '4.1'
+    - 5.0.0
+    - 5.2.0
+  label: Car
+  search:
+    terms:
+      - auto
+      - automobile
+      - sedan
+      - transportation
+      - travel
+      - vehicle
+  styles:
+    - duotone
+  unicode: f1b9
+  voted: false
+car-side:
+  changes:
+    - 5.2.0
+  label: Car Side
+  search:
+    terms:
+      - auto
+      - automobile
+      - sedan
+      - transportation
+      - travel
+      - vehicle
+  styles:
+    - duotone
+  unicode: f5e4
+  voted: false
+check:
+  changes:
+    - '1'
+    - 5.0.0
+  label: Check
+  search:
+    terms:
+      - accept
+      - agree
+      - checkmark
+      - confirm
+      - correct
+      - done
+      - notice
+      - notification
+      - notify
+      - ok
+      - select
+      - success
+      - tick
+      - todo
+      - 'yes'
+  styles:
+    - solid
+  unicode: f00c
+  voted: false
+circle:
+  changes:
+    - '3'
+    - 5.0.0
+    - 5.10.1
+    - 5.10.2
+  label: Circle
+  search:
+    terms:
+      - circle-thin
+      - diameter
+      - dot
+      - ellipse
+      - notification
+      - round
+  styles:
+    - duotone
+    - regular
+  unicode: f111
+  voted: false
+clock:
+  changes:
+    - '1'
+    - 5.0.0
+    - 5.12.1
+  label: Clock
+  search:
+    terms:
+      - date
+      - late
+      - schedule
+      - time
+      - timer
+      - timestamp
+      - watch
+  styles:
+    - duotone
+  unicode: f017
+  voted: false
+edit:
+  changes:
+    - '1'
+    - 5.0.0
+  label: Edit
+  search:
+    terms:
+      - edit
+      - pen
+      - pencil
+      - update
+      - write
+  styles:
+    - solid
+    - duotone
+  unicode: f044
+  voted: false
+hand-holding:
+  changes:
+    - 5.0.9
+  label: Hand Holding
+  search:
+    terms:
+      - carry
+      - lift
+  styles:
+    - solid
+  unicode: f4bd
+  voted: false
+info-square:
+  changes:
+    - 5.0.0
+  label: Info Square
+  search:
+    terms:
+      - details
+      - help
+      - information
+      - more
+      - support
+  styles:
+    - regular
+  unicode: f30f
+  voted: false
+long-arrow-down:
+  changes:
+    - '3.2'
+    - 5.0.0
+  label: Long Arrow Down
+  search:
+    terms:
+      - download
+      - long-arrow-down
+  styles:
+    - regular
+  unicode: f175
+  voted: false
+long-arrow-up:
+  changes:
+    - '3.2'
+    - 5.0.0
+  label: Long Arrow Up
+  search:
+    terms:
+      - long-arrow-up
+      - upload
+  styles:
+    - regular
+  unicode: f176
+  voted: false
+plus:
+  changes:
+    - '1'
+    - 5.0.0
+    - 5.0.13
+  label: plus
+  search:
+    terms:
+      - add
+      - create
+      - expand
+      - new
+      - positive
+      - shape
+  styles:
+    - solid
+  unicode: f067
+  voted: false
+pound-sign:
+  changes:
+    - '3.2'
+    - 5.0.0
+  label: Pound Sign
+  search:
+    terms:
+      - currency
+      - gbp
+      - money
+  styles:
+    - solid
+  unicode: f154
+  voted: false
+print:
+  changes:
+    - '1'
+    - 5.0.0
+    - 5.3.0
+    - 5.11.0
+  label: print
+  search:
+    terms:
+      - business
+      - copy
+      - document
+      - office
+      - paper
+  styles:
+    - duotone
+  unicode: f02f
+  voted: false
+sack:
+  changes:
+    - 5.7.0
+    - 5.10.2
+  label: Sack
+  search:
+    terms:
+      - bag
+      - burlap
+      - money
+      - santa
+  styles:
+    - duotone
+  unicode: f81c
+  voted: false
+slash:
+  changes:
+    - 5.4.0
+  label: Slash
+  search:
+    terms:
+      - cancel
+      - close
+      - mute
+      - 'off'
+      - stop
+      - x
+  styles:
+    - solid
+    - duotone
+  unicode: f715
+  voted: true
+spinner:
+  changes:
+    - '3'
+    - 5.0.0
+    - 5.10.2
+  label: Spinner
+  search:
+    terms:
+      - circle
+      - loading
+      - progress
+  styles:
+    - duotone
+  unicode: f110
+  voted: false
+spinner-third:
+  changes:
+    - 5.0.0
+    - 5.10.2
+  label: Spinner Third
+  search:
+    terms:
+      - circle
+      - loading
+      - progress
+  styles:
+    - duotone
+  unicode: f3f4
+  voted: false
+tenge:
+  changes:
+    - 5.6.0
+  label: Tenge
+  search:
+    terms:
+      - currency
+      - kazakhstan
+      - money
+      - price
+  styles:
+    - solid
+  unicode: f7d7
+  voted: true
+times:
+  changes:
+    - '1'
+    - 5.0.0
+    - 5.0.13
+    - 5.11.0
+    - 5.11.1
+  label: Times
+  search:
+    terms:
+      - close
+      - cross
+      - error
+      - exit
+      - incorrect
+      - notice
+      - notification
+      - notify
+      - problem
+      - wrong
+      - x
+  styles:
+    - solid
+  unicode: f00d
+  voted: false
+user:
+  changes:
+    - '1'
+    - 5.0.0
+    - 5.0.3
+    - 5.0.11
+  label: User
+  search:
+    terms:
+      - account
+      - avatar
+      - head
+      - human
+      - man
+      - person
+      - profile
+  styles:
+    - duotone
+  unicode: f007
+  voted: false
+user-plus:
+  changes:
+    - '4.3'
+    - 5.0.0
+    - 5.0.3
+    - 5.0.11
+  label: User Plus
+  search:
+    terms:
+      - add
+      - avatar
+      - positive
+      - sign up
+      - signup
+      - team
+  styles:
+    - solid
+  unicode: f234
+  voted: false
