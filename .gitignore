@@ -26,7 +26,7 @@ yarn-error.log*
 .yarn*
 /junk
 /docs
-src/images/fa-subset/*
+fa-subset/
 src/Components/utility/Icon1.jsx
 src/images/fa-subset/css/*
 src/images/fa-subset/css/all.css
