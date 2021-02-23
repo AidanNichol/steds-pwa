@@ -17,6 +17,19 @@ export const dispDate = (dat, base = loadedDate) => {
   const fmt = differenceInMonths(base, tdat) > 6 ? 'dd MMM, yyyy' : 'dd MMM HH:mm';
   return format(tdat, fmt);
 };
+export const ageInMonths = (dat, base = loadedDate) => {
+  if (!dat) return 10000;
+  const tdat = parseISO(dat.substr(0, 10));
+  console.log('ageinMonths', dat, tdat);
+  return differenceInMonths(base, tdat);
+};
+
+export const yearMonth = (dat) => {
+  if (!dat) return '';
+  // const tdat = parseISO(dat.substr(0, 10));
+
+  return fmtFp('MMM yyyy', parseISO(dat.substr(0, 10)));
+};
 
 export const adjustMonths = (oldDate, inc = 1) => {
   return formatDate(addMonths(parseISO(oldDate), inc));
@@ -58,70 +71,3 @@ export const currentSubsYear = () => {
 export const getTimestamp = () => {
   return formatISOdate(new Date());
 };
-
-// export const DateStore = types
-//   .model({
-//     today: types.optional(types.Date, new Date()),
-//     testing: types.optional(types.boolean, false)
-//   })
-//   .views(self => ({
-//     datetimePlus1(oldDate, inc = 1) {
-//       return formatISOdate(addMilliseconds(parseISO(oldDate), inc));
-//     },
-
-//     dispDate(dat) {
-//       return dispDate(dat, self.Today);
-//     },
-
-//     get dayNo() {
-//       return getDay(self.today);
-//     },
-
-//     get todaysDate() {
-//       return formatDate(self.today);
-//     },
-//     getLogTime(today = new Date()) {
-//       return formatISOdate(today);
-//     },
-
-//     get now() {
-//       return format(new Date(), 'yyyy-MM-dd HH:mm');
-//     },
-
-//     get prevDate() {
-//       return formatDate(addDays(self.today, -55));
-//     },
-
-//     get lastAvailableDate() {
-//       return formatDate(addDays(self.today, 59));
-//     },
-
-//     get logTime() {
-//       return formatISOdate(new Date());
-//     },
-//     datetimeIsRecent(datStr) {
-//       return self.datetimeIsToday(datStr);
-//     },
-//     datetimeIsToday(datStr) {
-//       return datStr.substr(0, 10) === self.todaysDate; // in the same day
-//     },
-
-//     datePlusNweeks(dat, n = 4) {
-//       return formatDate(addWeeks(parseISO(dat), n));
-//     },
-//     datePlusNyears(dat, n) {
-//       return formatDate(addYears(dat ? parseISO(dat) : new Date(), n));
-//     },
-//     datePlusNmonths(dat, n) {
-//       return formatDate(addMonths(parseISO(dat), n));
-//     },
-//     datePlusNdays(dat, n) {
-//       return formatDate(addDays(new Date(dat), n));
-//     }
-//   }))
-//   .actions(self => ({
-//     setNewDate(newDate, testing = false) {
-//       self.today = typeof newDate === 'string' ? new Date(newDate) : newDate;
-//       self.testing = testing;
-//     }
-//   }));

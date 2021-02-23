@@ -1,7 +1,6 @@
 import React from 'react';
 // import Symbols from './Symbols';
 import { Icon } from '../../Components/utility/Icon';
-import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the CSS
 
 import Logit from '../../logit';
 const logit = Logit('Reports/SVGcomponents/MemberSumm');

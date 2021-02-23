@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import logit from '../../logit';
+import Logit from '../../logit';
+const logit = Logit('Component/utility/Icon');
 
 const X = [
   { icon: ['fas', 'slash'], color: 'white', transform: 'up-2' },
@@ -34,6 +35,8 @@ const afIcons = {
   long_arrow_down: { icon: ['far', 'long-arrow-down'] },
   page_up: { icon: ['fad', 'arrow-alt-up'] },
   page_down: { icon: ['fad', 'arrow-alt-down'] },
+  thumbs_up: { icon: ['fad', 'thumbs-up'] },
+  thumbs_down: { icon: ['fad', 'thumbs-down'] },
   user_add: [
     { icon: ['fad', 'user'] },
     { icon: 'plus', color: 'green', transform: 'shrink-8 up-5 right-7' },
@@ -50,6 +53,10 @@ const afIcons = {
     { icon: ['fad', 'user'], color: 'orange' },
     { icon: 'times', color: 'red', transform: 'grow-1' },
   ],
+  user_deceased: [
+    { icon: ['fad', 'user'], color: 'orange' },
+    { icon: ['fad', 'tombstone'], color: 'black', transform: 'shrink-8 up-5 right-7' },
+  ],
   user_undelete: [
     { icon: ['fad', 'user'], color: 'red' },
     { icon: 'check', color: 'green', transform: 'grow-1' },
@@ -62,7 +69,6 @@ const afIcons = {
 ['B', 'C', 'W', 'T', 'P'].forEach((ky) => (afIcons[ky + 'X'] = [afIcons[ky], ...X]));
 afIcons['+X'] = [...afIcons['+'], ...X];
 
-console.log('fa Icons', afIcons);
 // import logo from '../../../public/icon-B.svg';
 export const Icon = ({ type, name, className: cls, size, ...rest }) => {
   if (!name && type) name = type;
@@ -85,7 +91,6 @@ export const Icon = ({ type, name, className: cls, size, ...rest }) => {
     logit(`can't find`, name);
   }
 
-  console.log('Icon2', name, type);
   return null;
 };
 const Centered = styled.span`

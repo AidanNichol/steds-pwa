@@ -8,7 +8,6 @@ import { CreditsOwedRpt } from './CreditsOwedRpt';
 // import { creditsOwedReport } from './creditsReport2';
 import { WalkDayBookingSheet } from './WalkDayBookingSheet';
 import { format } from 'date-fns';
-import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the CSS
 
 import Logit from '../logit';
 var logit = Logit('Reports/summaryReport');

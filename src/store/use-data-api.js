@@ -90,7 +90,7 @@ const myFetch = (url, ...rest) => {
 const myFetch2 = async (...queryKey) => {
   const url = typeof queryKey === 'string' ? queryKey : queryKey.join('');
   logit(`myFetchData`, url, queryKey);
-  return fetch(dbName + url)
+  return await fetch(dbName + url)
     .then((resp) => {
       return resp.json();
     })
@@ -98,7 +98,7 @@ const myFetch2 = async (...queryKey) => {
       logit(`myFetchData ${url} returned:`, resp);
       return resp;
     })
-    .then(sleeper(1000))
+    // .then(sleeper(1000))
     .then((body) => body.data);
 };
 export const postData = postRequest('bookings/', 'patches');

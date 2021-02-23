@@ -3,7 +3,6 @@ import React from 'react';
 import _ from 'lodash';
 import { Panel } from '../utility/AJNPanel';
 import styled from 'styled-components';
-// import { IconsLoad } from '../../fontAwesome2';
 
 // import Logit from 'logit';
 // var logit = Logit('components/views/bookings/PaymentStatusLog');

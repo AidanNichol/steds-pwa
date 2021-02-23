@@ -2,8 +2,8 @@ import React from 'react';
 import { ReactComponent as Logo } from '../images/St.EdwardsLogoSimple.svg';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import _ from 'lodash';
-import { paidUp, getSubsStatus } from '../store/model/members';
-import { pcexp } from '../Components/utility/normalizersH';
+import { isPaidUp, getSubsStatus } from '../store/model/members';
+import { pcexp } from '../Components/utility/normalizers';
 
 import { useFetchData } from '../store/use-data-api';
 import useFitText from 'use-fit-text';
@@ -192,7 +192,7 @@ export const MembershipListReport = () => {
   logit('allMembers fetchData returned', resp);
   if ((resp?.data?.length ?? 0) <= 0) return null;
   let members = _.sortBy(
-    resp.data?.filter((m) => showAll || paidUp(m)),
+    resp.data?.filter((m) => showAll || isPaidUp(m)),
     [sortBy],
   );
   const memPerPage = 15;

@@ -30,14 +30,15 @@ export const members = {
 ┃                    computed                              ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ 
 */
-export const paidUp = (m) => m.memberStatus !== 'Member' || m.subscription >= subsYear;
+export const isPaidUp = (m) =>
+  m?.memberStatus !== 'Member' || m?.subscription >= subsYear;
 members.sortedByName = computed((s) => s.sortedBy('sortName'));
 members.sortedByNo = computed((s) => s.sortedBy('memNo'));
 members.sorted = computed((s) => s.sortedBy(s.sortBy));
 members.sortedBy = computed([(s) => s.list, (s) => s.showAll], (list, showAll) => {
   return (sortBy) => {
     return _.sortBy(
-      list?.filter((m) => showAll || paidUp(m)),
+      list?.filter((m) => showAll || isPaidUp(m)),
       [sortBy],
     );
   };

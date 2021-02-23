@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import classnames from 'classnames';
-import styled from 'styled-components';
+import styled from 'styled-components/macro';
 import { useStoreState, debug } from 'easy-peasy';
 
 import { NewBookingCell } from './NewBookingCell';
 import { OldBookingCell } from './OldBookingCell';
 import { AnnotateBooking } from './annotateBooking';
 import Logit from '../../../logit';
+import { isPaidUp } from '../../../store/model/members';
 var logit = Logit('component/views/bookings/statusTable');
 const delSettings = {
   D: { 'data-text': 'Subs Due', style: { '--color': 'green' } },
   G: { 'data-text': 'Guest', style: { '--color': 'blue' } },
   L: { 'data-text': 'Subs Late', style: { '--color': 'red' } },
+  lapsed: { 'data-text': 'Lapsed', style: { '--color': 'red' } },
+  deceased: { 'data-text': 'Deceased', style: { '--color': 'black' } },
   S: { 'data-text': 'Suspended', style: { '--color': 'black' } },
   X: { 'data-text': 'Delete Me', style: { '--color': 'red' } },
 };
@@ -30,7 +33,7 @@ export const StatusTable = (props) => {
   const members = (account.Members || []).map((m) => {
     let mm = index.get(m.memberId);
     logit('members map', debug(m), debug(mm));
-    mm.showState = getShowState(mm.subsStatus?.status, mm.deleteState);
+    mm.showState = getShowState(mm);
     return mm;
   });
 
@@ -118,10 +121,14 @@ export const StatusTable = (props) => {
     </div>
   );
 };
-const getShowState = (subsStatus, deleteState) => {
-  logit('getShowState In:', subsStatus, deleteState);
+const getShowState = (mem) => {
+  if (!mem) return '?';
+  const subsStatus = mem.subsStatus.status;
+  logit('getShowState In:', mem, isPaidUp(mem), mem.deleteState);
   let state = subsStatus === 'ok' ? '' : subsStatus?.toUpperCase()[0];
-  if (deleteState >= 'S') state = deleteState;
+  if (!isPaidUp(mem)) state = 'lapsed';
+  if (mem.deleteState === 'D') state = 'deceased';
+  if (mem.deleteState >= 'S') state = mem.deleteState;
   logit('getShowState Out:', state);
   return state;
 };
@@ -190,7 +197,7 @@ const StatusRow = styled.div`
 
       transition: all 200ms ease-in;
       &:hover {
-        z-index: 2;
+        z-index: 200;
         transform: scale(1.4);
       }
 

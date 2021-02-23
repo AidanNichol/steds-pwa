@@ -6,23 +6,21 @@ const titleize = (string) =>
   });
 
 var logit = Logit('components/utility/normalizers');
-export function normalize(field, fn) {
-  let origalOnChange = field.onChange;
-  // if (event.type!=='input')
-  return {
-    ...field,
-    onChange: (event) => {
-      logit('normalizer', { field, event, target: event.target });
-      event.target.value = fn(event.target.value, field.value);
+// export function normalize(field, fn) {
+//   let origalOnChange = field.onChange;
+//   // if (event.type!=='input')
+//   return {
+//     ...field,
+//     onChange: (event) => {
+//       logit('normalizer', { field, event, target: event.target });
+//       event.target.value = fn(event.target.value, field.value);
 
-      return origalOnChange(event);
-    },
-  };
-}
+//       return origalOnChange(event);
+//     },
+//   };
+// }
 
-export function properCaseName(e) {
-  if (!e.target.value) return;
-  let name = e.target.value;
+export function properCaseName(name) {
   const lowerCaseNames = ['van', 'de', 'de la', 'de le', 'von', 'van der'];
   var pcexp, pre, result;
   pcexp = /^(Mac|Mc|.+[ '])?(\w)$/;
@@ -36,7 +34,7 @@ export function properCaseName(e) {
     } else pre = '';
     name = pre + result[2].toUpperCase();
   }
-  e.target.value = name;
+  return name;
 }
 const addressShortcuts = {
   Wb: 'Whitley Bay',
@@ -59,10 +57,7 @@ const addressShortcuts = {
 // export const pcexp = /^([^]*)([abcdefghijklmnoprstuwyz]{1}[abcdefghklmnopqrstuvwxy]?[0-9]{1,2})(\s*)([0-9]{1}[abdefghjlnpqrstuwxyz]{2})$/i;
 export const pcexp = /^([^]*)([a-pr-uwyz]{1}[a-hk-y]?[0-9]{1,2})(\s*)([0-9]{1}[abd-jlnp-uw-z]{2})$/i;
 
-export function properCaseAddress(e) {
-  if (!e.target.value) return;
-  let address = e.target.value;
-  // if (address.substr(0, oldValue.length) !== oldValue) return address;
+export function properCaseAddress(address) {
   let result,
     addrLines = address.split('\n');
   //Post Code validation
@@ -76,31 +71,32 @@ export function properCaseAddress(e) {
     }
     addrLines[index] = line;
   });
-  e.target.value = addrLines.join('\n');
+  return addrLines.join('\n');
 }
 
-export function normalizePhone(e) {
-  if (!e.target.value) return;
-  var onlyNums = e.target.value.replace(/[^\d]/g, '');
+export function normalizePhone(number) {
+  if (!number) return '';
+  logit('normalizePhone', number);
+  var onlyNums = number.replace(/[^\d]/g, '');
   if (onlyNums.length > 0 && onlyNums[0] !== '0') onlyNums = '0191' + onlyNums;
 
   const rg = /^(\d{0,4})(\d{0,3})?(\d*)?$/;
   let result = onlyNums.match(rg);
-  if (!result) return;
+  if (!result) return '';
 
-  e.target.value = result
+  return result
     .slice(1)
     .filter((b) => b)
     .join('-');
 }
-export function normalizeMobile(e) {
-  if (!e.target.value) return;
-  var onlyNums = e.target.value.replace(/[^\d]/g, '');
+export function normalizeMobile(number) {
+  if (!number) return '';
+  var onlyNums = number.replace(/[^\d]/g, '');
   const rg = /^(\d{0,5})(\d{0,3})?(\d*)?$/;
   let result = onlyNums.match(rg);
   if (!result) return;
 
-  e.target.value = result
+  return result
     .slice(1)
     .filter((b) => b)
     .join('-');

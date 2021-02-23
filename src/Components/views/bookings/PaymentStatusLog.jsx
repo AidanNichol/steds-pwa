@@ -142,7 +142,7 @@ const TheTable = function TheTable(props) {
               </div>
               {log.bookingId ? (
                 <Booking>
-                  <Icon type={log.req} />
+                  <Icon type={log.req} className='icon' />
                   <Amount>{log.fee || ''}</Amount>
                   <span>
                     <span className='text' title={log.walkId}>
@@ -153,7 +153,7 @@ const TheTable = function TheTable(props) {
                 </Booking>
               ) : (
                 <Payment>
-                  <Icon type={log.req} />
+                  <Icon type={log.req} className='icon' />
                   <Amount
                     className={log.refundId && log.req.length === 1 ? 'refunded' : ''}
                   >
@@ -281,6 +281,10 @@ const Table = styled.div`
     span {
       text-align: center;
     }
+  }
+  .icon {
+    display: inline-block;
+    min-width: 1.25em;
   }
 
   .scrollBox {

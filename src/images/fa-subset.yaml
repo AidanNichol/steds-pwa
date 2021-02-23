@@ -1,4 +1,4 @@
-projectName: Unsaved Project
+projectName: fa-subset
 version: 5.13.1
 icons:
   - slash:
@@ -54,7 +54,22 @@ icons:
       - duotone
   - info-square:
       - regular
+      - duotone
   - long-arrow-down:
       - regular
   - long-arrow-up:
+      - regular
+  - thumbs-down:
+      - duotone
+  - thumbs-up:
+      - duotone
+  - info-circle:
+      - duotone
+  - tombstone:
+      - duotone
+  - tombstone-alt:
+      - duotone
+  - square-full:
+      - regular
+  - square:
       - regular

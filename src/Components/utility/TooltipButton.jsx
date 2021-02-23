@@ -4,9 +4,9 @@ import classnames from 'classnames';
 import { Icon } from './Icon.jsx';
 import styled from 'styled-components';
 
-import Logit from '../../logit';
-var logit = Logit('components/utility/TooltipButton');
-const TooltipButton = (props) => {
+// import Logit from '../../logit';
+// var logit = Logit('components/utility/TooltipButton');
+const TooltipButton = React.memo((props) => {
   var {
     img,
     icon,
@@ -21,7 +21,6 @@ const TooltipButton = (props) => {
     iconStyle,
     ...other
   } = props;
-  logit('props', props);
   if (lable) label = lable;
   if (visible !== true) return null;
 
@@ -48,7 +47,7 @@ const TooltipButton = (props) => {
       {overlay ? <span className='overlay'>{overlay}</span> : ''}
     </StyledButton>
   );
-};
+});
 
 const StyledButton = styled.button`
   color: #333;

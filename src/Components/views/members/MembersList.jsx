@@ -2,7 +2,7 @@
 import React from 'react';
 import { useStoreState, useStoreActions } from 'easy-peasy';
 import classnames from 'classnames';
-import { EditMemberData } from './EditMemberDataH.jsx';
+import { EditMemberData } from './EditMemberData.jsx';
 import TooltipButton from '../../utility/TooltipButton';
 import { PrintButton } from '../../utility/PrintButton';
 import { MembershipListReport } from '../../../Reports/membershipListRpt';

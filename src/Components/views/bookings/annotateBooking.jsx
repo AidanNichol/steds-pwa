@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStoreActions, useStoreState } from 'easy-peasy';
-import TextInput from 'react-textarea-autosize';
+import TextField from '@material-ui/core/TextField';
 
 import Logit from '../../../logit';
 var logit = Logit('components/views/bookings/annotateBooking');
@@ -35,7 +35,13 @@ export function AnnotateBooking(props) {
       <button onClick={save}>Save</button>
       <button onClick={closeAnno}>Cancel</button>
       <div>
-        <TextInput name={name} defaultValue={note} cols='40' onChange={change} />
+        <TextField
+          multiline
+          defaultValue={note}
+          onChange={change}
+          label={'Annotation: ' + name}
+          variant='outlined'
+        />
       </div>
     </div>
   );

@@ -1,34 +1,37 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
+import React from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
 // import 'hint.css';
-import './styles/busList.scss';
-import './styles/bookings.scss';
-import './styles/folder-tabs.scss';
-import './styles/about.scss';
-import './styles/lock.scss';
-import './styles/editMember.scss';
-import './styles/memberlist-grid.scss';
-import './styles/mainpage-grid.scss';
-import './styles/panel.scss';
-import './styles/payments.scss';
-import './styles/normalize.scss';
-import './styles/watermark.scss';
-import './styles/react-select.scss';
-import './styles/paymentsSummary.scss';
-import './styles/settings.scss';
+import "./styles/busList.scss";
+import "./styles/bookings.scss";
+import "./styles/folder-tabs.scss";
+import "./styles/about.scss";
+import "./styles/lock.scss";
+import "./styles/editMember.scss";
+import "./styles/memberlist-grid.scss";
+import "./styles/mainpage-grid.scss";
+import "./styles/panel.scss";
+import "./styles/payments.scss";
+import "./styles/normalize.scss";
+import "./styles/watermark.scss";
+import "./styles/react-select.scss";
+import "./styles/paymentsSummary.scss";
+import "./styles/settings.scss";
 // import * as serviceWorker from './serviceWorker';
-import { App } from './app';
-import { StoreProvider } from 'easy-peasy';
-import epStore from './store/store';
-import { IconsLoad } from './fontAwesome2';
-import { ReactQueryDevtools } from 'react-query-devtools';
+import { App } from "./app";
+import { StoreProvider } from "easy-peasy";
+import epStore from "./store/store";
+import { IconsLoad } from "./fontAwesome2";
+import { ReactQueryDevtools } from "react-query-devtools";
 
 // import ServiceWorkerWrapper from './Components/layouts/SWwrapper';
 
 // import MainLayout from './Components/layouts/MainLayout';
+for (let i = 0; i < 40; i++) {
+  console.log(i, (Math.pow(2, i) - 1).toLocaleString());
+}
 
-console.log('epStore Provider', epStore, StoreProvider);
+console.log("epStore Provider", epStore, StoreProvider);
 
 ReactDOM.render(
   <>
@@ -38,7 +41,7 @@ ReactDOM.render(
     </StoreProvider>
     <ReactQueryDevtools initialIsOpen={false} />
   </>,
-  document.getElementById('root'),
+  document.getElementById("root"),
 );
 // });
 

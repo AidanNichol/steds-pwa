@@ -4,7 +4,6 @@ import { useStoreState, useStoreActions } from 'easy-peasy';
 import { fetchData } from '../store/use-data-api';
 import { preparePayments } from '../store/model/displayLog2';
 import { dispDate } from '../store/dateFns';
-import '@fortawesome/fontawesome-svg-core/styles.css'; // Import the CSS
 
 import _ from 'lodash';
 
